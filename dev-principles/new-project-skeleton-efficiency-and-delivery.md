@@ -17,7 +17,7 @@ Vocabulary follows the principles' responsibility map: `schemas/` (contracts), `
 
 | Artifact | Done when | Enforced by |
 |---|---|---|
-| A phase-zero contract document: layers, boundary contracts, conventions, layout, and the delivery ladder (section 7), approved by the human | Approved and linked from the repository instructions | Review |
+| A phase-zero contract document: layers, boundary contracts, conventions, layout, and the delivery ladder (section 8), approved by the human | Approved and linked from the repository instructions | Review |
 | Layer table with downward-only imports, covering all shipped code including deployment and operations tooling | The import checker reports zero violations with an empty baseline | Check |
 | Package shape: each package that exists has a public `api` module whose exports are its contract, and a README with responsibility, inputs and outputs, and failure reasons. No package is created before it has content | A check confirms every package has both | Check |
 | Failure model: one business-refusal type that broad error handlers cannot swallow, with its own exit code. Programming errors use ordinary exceptions | A contract test shows a refusal passing through a broad handler | Test |
@@ -33,7 +33,7 @@ Vocabulary follows the principles' responsibility map: `schemas/` (contracts), `
 | Artifact | Done when | Enforced by |
 |---|---|---|
 | Environment layout: production root, research root, secret location, and retention rules for run outputs | No production input resolves outside the production root. The release is built from a tag and excludes tests, docs, and dev tools | Check |
-| The thin slice (section 7) writing to the real output channel in a test environment, with build, cutover, and rollback scripts | One rehearsed cutover and one rehearsed rollback | Rehearsal |
+| The thin slice (section 8) writing to the real output channel in a test environment, with build, cutover, and rollback scripts | One rehearsed cutover and one rehearsed rollback | Rehearsal |
 | Operations: stale required inputs block publishing; every external source declares its failure behaviour (retry, record a gap, or block); alerts reach a person | Each failure is rehearsed once, and a person confirms receiving the alert | Rehearsal |
 | For a rewrite: a shadow-run period, written cutover criteria, and a retirement date for the old system | The criteria are met and recorded | Review |
 
