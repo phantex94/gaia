@@ -6,6 +6,8 @@ The objective is to preserve quantitative correctness while keeping the system u
 
 Use **Check** for automated structural checks, **Test** for behavior, and **Review** for engineering judgment. Record commands or review evidence in `docs/verification.md`; follow `new-project-skeleton-efficiency-and-delivery.md` for delivery mechanics. [Check / Review]
 
+Distinguish domain invariants, architectural constraints, and default practices. PIT, split isolation, and immutable As-Traded records are correctness requirements. Import boundaries and publication protocols express the approved architecture. Function length, directory names, and extension patterns are defaults whose value depends on whether they reduce total complexity. A design review may revise a default; it must not silently weaken a correctness requirement. [Review]
+
 ## 1. Establish the domain invariants
 
 Before implementing a capability, identify its business meaning, inputs, outputs, failure behavior, and applicable invariants. Carry these requirements through architecture, task briefs, implementation, and acceptance checks.
@@ -56,6 +58,26 @@ Apply dependency inversion at meaningful external boundaries. Prefer composition
 
 Allow declared, acyclic public-interface dependencies; reject private imports and undeclared data access. A real boundary can justify a narrow interface with one implementation. Defer registries and generic extensions until a concrete use case requires them. [Check / Review]
 
+### Assign knowledge to modules, not workflow stages
+
+Keep four structures distinct: the computational DAG describes data dependencies; module boundaries assign ownership of knowledge; execution state machines describe lifecycle transitions; the coordinator's task DAG describes delivery dependencies. A pipeline stage does not automatically deserve a package. Reading historical data and replaying production may use the same PIT capability because both depend on availability and revision semantics. [Review]
+
+For each module, state what knowledge it owns, what callers must know, and which changes should remain local. Keep tightly coupled mechanisms together when splitting them would duplicate knowledge or force callers to coordinate them. Permit an acyclic public dependency where it expresses real ownership. [Review]
+
+### Build deep modules around recurring complexity
+
+A deep module offers substantial capability through an interface that is easy to use correctly. Judge the complete caller contract, including required call ordering and hidden preconditions, rather than argument count or implementation length. Prioritize PIT data access and publication/recovery as candidates. [Review]
+
+| Capability | Encapsulated mechanisms | Decisions that remain explicit |
+|---|---|---|
+| PIT data view | Revision selection, visibility enforcement, physical reads, and lineage capture | Decision cutoff, revision policy, required data, and freshness policy |
+| Stateful computation | Mathematical definition, warmup, sufficient state, and state-version compatibility | Business parameters, inputs, and committed predecessor state |
+| Publication and recovery | Conditional commit, atomic output/state visibility, duplicate attempts, and reconciliation | Logical identity, destination, publication authorization, and conflict policy |
+
+Hide implementation mechanics while preserving auditable business semantics. Do not turn uncertain design choices into configuration switches that every caller must understand. Conversely, do not hide choices that change research results behind convenient defaults. Measure success by how much knowledge callers no longer need. [Review]
+
+These boundary-design ideas apply information hiding and deep modules from [chapter 4](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch04.html), [chapter 5](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch05.html), and [pulling complexity downwards](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch08.html). Their quantitative applications here are engineering recommendations, not claims made by the book.
+
 ## 3. Preserve backtesting and live trading semantics
 
 Backtesting and live trading must share core decision logic and domain contracts. Isolate data delivery, clock behavior, persistence, broker connectivity, and simulated execution behind explicit adapters.
@@ -91,6 +113,10 @@ Every operational business capability must have a corresponding CLI workflow. Ke
 The CLI gives humans and agents a common way to run the system, inspect state, reproduce results, and demonstrate acceptance scenarios.
 
 Default CLI writes to Dry-run; require an explicit write flag. Preserve the independent `business refusal` exit code through error handling. Justified direct scheduler calls must reuse the same application service and contracts. [Check / Test / Review]
+
+Reduce exceptional cases through operation semantics where safe. A matching retry should return the existing committed result, and readers should observe output and state through one committed reference. Keep missing required data, conflicting lineage, unavailable models, and infeasible or invalid computations as explicit refusals. An adapter cannot guarantee remote idempotency unless the external service supports it or reconciliation can establish the action's status. In particular, a broker timeout is not proof that an order was rejected. [Test / Review]
+
+This applies [defining errors out of existence](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch10.html) without turning real quantitative failures into silent recovery.
 
 ## 5. Organize the repository as durable project memory
 
@@ -138,6 +164,8 @@ Before a handoff or context reset, record the current revision, completed change
 
 Persist long-task dependencies, input versions, output references, checkpoints, retry rules, and blockers. Resume from verified artifacts. Repeated wake-ups and retries must not repeat commits, publications, or accounting effects. [Check / Test]
 
+Treat project memory as part of the interface design. Global instructions contain shared invariants; module documentation explains local contracts and hidden mechanisms; task records retain execution evidence. When every task needs an expanding list of global caveats, inspect information leakage before adding more instructions. Document necessary semantics, then simplify the design where documentation is compensating for avoidable coupling. [Review]
+
 ## 7. Define coordinator and worker responsibilities
 
 Minimize end-to-end completion time under correctness and acceptance requirements. Count decomposition, context transfer, coordination, integration, and verification overhead. Classify quickly; do not plan at length merely to classify small work. [Review]
@@ -161,6 +189,8 @@ Verify tool and command availability; use executable fallbacks and disclose limi
 
 The coordinator owns decomposition, dependency planning, task assignment, shared contract decisions, integration, and acceptance review. Workers own bounded changes and the evidence that those changes meet their assigned requirements.
 
+Assign a capability with a coherent contract before assigning its files. A PIT reader, visibility filter, and revision selector need one coordinated semantic owner even if implementation is split among workers. Before dispatch, identify the complexity the capability absorbs, the knowledge callers retain, the policies that remain explicit, the changes expected to stay local, and the behavioral proof. At acceptance, inspect representative caller code and reject unexplained complexity pushed onto callers. [Review]
+
 Use one project coordinator per repository when projects need independent scope and execution. Cross-project observations should be reported to the responsible coordinator. They do not authorize edits in another repository.
 
 Give each worker a task brief that contains:
@@ -182,6 +212,8 @@ The coordinator must inspect evidence from the final integrated revision. A work
 
 Define a target architecture and move toward it in verifiable increments. Each increment must deliver an observable capability or enforce a required boundary. Avoid speculative abstractions and temporary compatibility layers without identified consumers and a removal plan.
 
+For consequential boundaries, design at least two structurally different interface sketches before adopting one. Compare representative caller code, semantic explicitness, change locality, failure handling, and plausible performance. Sketch only enough to expose tradeoffs; two complete implementations or parallel agents are not required. Record the chosen design and its rationale, then revisit it when implementation reveals repeated friction. Do not apply this exercise mechanically to small routine edits. This follows [design it twice](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch11.html). [Review]
+
 Stage the gates: require PIT, explicit semantics, split isolation, versions, and basic references in exploration; add stable contracts, state recovery, independent references, and budgets for reusable components; add publication, reconciliation, monitoring, recovery, and rollback evidence before production. Preserve Day-zero foundation gates without imposing full deployment procedures on each hypothesis. [Check / Test / Review]
 
 Use architectural fitness functions, meaning executable checks of architectural properties. Relevant checks include permitted imports, dependency cycles, contract compatibility, point-in-time behavior, reproducibility, and equivalence across execution modes.
@@ -202,6 +234,8 @@ For each task, the worker and coordinator must establish that:
 - Relevant checks ran against the final integrated revision, with commands, environment, and results recorded. [Check / Test]
 - Contract, architecture, and operating documentation match the delivered behavior.
 - Remaining limitations, unverified behavior, and blocked dependencies are explicit.
+
+Review complexity using concrete changes, not file counts alone. For a new Alpha, a data-provider format change, and a publication retry, identify the knowledge required and the modules affected. Investigate change amplification, excessive cognitive load, and hidden dependencies. A new Alpha should reuse PIT access, run identity, recovery, and publication rather than reimplementing them. An intentionally changed contract may require migration; record why each affected caller must change. This applies the complexity symptoms in [chapter 2](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch02.html). [Review]
 
 Update durable project memory in the same change when implementation changes a contract, workflow, or architectural decision. Keep the evidence specific enough for another engineer or agent to repeat the verification.
 

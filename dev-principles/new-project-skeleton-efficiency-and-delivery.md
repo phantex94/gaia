@@ -25,6 +25,7 @@ Keep PIT, strict inputs, explicit parameters, missing-value semantics, and decla
 | Human-approved phase-zero contract covering layers, the first slice's boundaries, conventions, layout, and delivery ladder (§8) | Approved and linked from repository instructions | Review |
 | Allowed import table covering shipped code, deployment, and operations tooling | No forbidden imports or cycles; no unreviewed exemptions | Check |
 | Explicit public interfaces and responsibility documentation for actual packages | Inputs, outputs, and failure reasons are documented; no empty speculative packages | Check / Review |
+| Interface sketches for consequential boundaries (principles §2, §8) | Compare two alternatives with caller examples; record knowledge ownership, explicit policies, and the chosen rationale | Review |
 | A business-refusal type and its own exit code; ordinary exceptions for programming errors | Broad handlers propagate refusal or map it explicitly; none convert it to success | Test |
 | Boundary contracts for the slice's inputs and output, including input owner and freshness | Each rule has an accepting and a refusing case | Test |
 | One implementation point for each convention, including units, rounding, calendars, price basis, and availability marking | Guards reject invalid inputs and repeated normalization | Test |
@@ -61,6 +62,9 @@ Keep PIT, strict inputs, explicit parameters, missing-value semantics, and decla
 - Use one field vocabulary across modules. Represent missing values as missing, never as zero or a sentinel. [Check / Test]
 - Introduce abstractions for demonstrated variation or a meaningful external boundary. Prefer narrow interfaces; add a registry only when actual consumers need discovery or selection. Do not require two implementations before defining a necessary interface. [Review]
 
+- Assign shared knowledge to one owner. Do not split a dataset's format, visibility, or revision rules among packages merely because reading, filtering, and replay happen at different times. Keep the computational DAG, module map, execution state machine, and agent task DAG separate. [Review]
+- For PIT access and publication/recovery, sketch a representative caller first. Keep storage mechanics, visibility enforcement, duplicate handling, and reconciliation inside the responsible capability. Keep cutoff, revision policy, authorization, and conflict semantics explicit. Do not remove CLI or adapter boundaries merely because they are thin; they translate between genuine abstractions. [Review]
+
 ## 4. Parameter template
 
 - Place one immutable parameter class next to each algorithm. Explain every field's unit and meaning. [Check / Review]
@@ -69,6 +73,8 @@ Keep PIT, strict inputs, explicit parameters, missing-value semantics, and decla
 - Order function arguments as business inputs, the parameter object, then keyword-only runtime switches. Do not pass through `**kwargs`; return named immutable records for multiple results. [Check]
 - Permit a `config_digest` of canonical effective parameters and configuration. Declare serialization, field order, numeric representation, and hash algorithm; verify that equivalent configurations produce the same digest and changed values change the identity. Dataset references may be explicit revision IDs; never embed dataset contents for indirect hashing. Apply the dataset prohibition in §6. [Check / Test]
 - Require explicit production environment and publishing values for production writes. Do not provide a force flag that bypasses these guards. [Check / Test]
+
+- Every new option must express a real business choice or a justified operational control. Keep storage and recovery mechanics inside their modules instead of exporting a collection of switches to callers. Preserve explicit semantic parameters; simplify the mechanism without silently choosing research policy. [Review]
 
 ## 5. Command-line interface
 
@@ -90,6 +96,8 @@ Keep PIT, strict inputs, explicit parameters, missing-value semantics, and decla
 - Validate data using contracts, row-key uniqueness, row counts, time coverage, lineage, and targeted content comparisons in acceptance tests. These checks do not establish cryptographic content integrity. Do not require full-history byte comparisons or repeated complete rereads on each run. [Check / Test]
 - Reuse a cache only when input revisions, node implementation, schema, effective configuration, model, and initial state identity all match. Changing any dependency creates a new cache version; never refresh a published version in place. A parameter-set name alone is not a cache key. [Check / Test]
 
+- Exercise the publication capability through its public contract, not only its internal helpers. Matching retries return the committed result; conflicting lineage refuses; readers never receive mixed output/state. For broker or other remote actions, test ambiguous responses against the actual adapter contract and reconcile before resending. A local transaction cannot promise exactly-once remote execution without supporting service semantics. [Test / Review]
+
 ## 7. Efficiency and memory
 
 Prove each optimization against the declared numerical and decision contract before accepting its performance gain. [Test]
@@ -103,6 +111,8 @@ Prove each optimization against the declared numerical and decision contract bef
 7. **Respect coupling.** Do not blindly split cross-sectional operators along the instrument axis. Declare valid groups and any cross-shard reduction, preserve required ordering, and test merged results against the unsharded reference. Measure before changing hardware. [Check / Test]
 8. **Separate repeatability from equivalence.** Require deterministic reruns of the same implementation under pinned inputs, state, and numerical environment. Compare discrete outputs exactly. For different implementations or environments, declare justified floating-point tolerances before measuring; require bitwise equality only where the contract demands it. Test downstream ranking, thresholds, constraints, rounding, and order decisions separately; a small numeric error does not prove equal decisions. [Test / Review]
 9. **Avoid repeated validation overhead.** Reuse validated immutable revisions and their lineage metadata. Apply §6 validation at declared boundaries; do not add repeated full-data scans or dataset hashing. [Check / Test]
+
+Review performance across module boundaries as well as inside kernels. Measure unnecessary reads, copies, serialization, and repeated interface calls before adding hardware or abstraction. Improve an interface when it forces wasteful usage, while preserving PIT, state, and numerical contracts. This applies [chapter 20's performance design](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch20.html). [Test / Review]
 
 ## 8. From MVP to full scope
 
@@ -136,10 +146,14 @@ Apply these verification rules at each relevant rung:
 - Choose the fastest viable execution mode using principles §7: do small tasks directly, delegate independent medium tasks only when parallel savings exceed coordination costs, and use a persistent task DAG for large or long-running work. Keep the task DAG distinct from the platform's computational DAG and execution state machines. [Review]
 - For persistent work, record dependency status, versioned inputs, outputs, checkpoints, retry rules, and acceptance conditions. Use available workflows for repeatable steps, goals for durable objectives, cron for future wakeups, and bounded loops for iteration. Cron does not establish dependency readiness; a loop needs an exit condition and iteration or time budget. Verify capabilities before use, deduplicate repeated wakeups, and report a scheduled task as scheduled rather than completed. Reduce concurrency when coordination becomes slower than direct work. [Check / Test / Review]
 
+- At each reusable delivery, run a design review alongside acceptance tests. Show how a new Alpha reuses the platform and how a provider change stays local. Inspect caller burden, duplicated knowledge, pass-through layers, and undocumented ordering assumptions. Consolidate tightly coupled code when that reduces total complexity; preserve or version public contracts during the change. Do not substitute function-count or line-count targets for this review. [Review]
+
 ## 9. Code style
 
-- Follow the Zen of Python; keep functions short and nesting shallow. [Review]
+- Follow the Zen of Python and keep nesting shallow. Prefer cohesive functions that a reader can understand in context; split when doing so hides a coherent mechanism or removes unrelated responsibilities. Do not fragment a mathematical computation into one-use wrappers solely to satisfy a length limit. [Review]
 - Keep comments concise, but explain nonobvious mathematics and temporal semantics. Allow multiline docstrings in `schemas/` and quantitative operators; document tensor axes, units, degrees of freedom, and missing-value propagation where applicable. Do not trade necessary meaning for a line-count rule. [Check / Review]
 - Permit parameter and configuration hashing only within §4 and §6. Enforce the dataset-hashing prohibition in every layer. [Check]
 - Catch exceptions at real I/O, application-entry, or task-supervision boundaries with an explicit recovery or reporting policy. Preserve business refusal and record failures; do not swallow errors or silently substitute results. [Test / Review]
 - Name a reference repository or module until the project has its own stable style. Assign each rule a checker, test, or reviewer; automate mechanical rules early and record the limits of each check. [Check / Review]
+
+Write the interface explanation and caller example before implementing a consequential module. Document behavior, preconditions, units, tensor axes, time semantics, side effects, and failure cases that are not evident from the signature. Use difficulty explaining an interface as feedback on the design. This follows [chapter 13 on useful comments](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch13.html) and [chapter 15 on writing comments first](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch15.html). The principles' §§2, 7–9 define the corresponding boundary, coordination, and review requirements; these book-derived practices supplement rather than replace quantitative correctness gates. [Review]
