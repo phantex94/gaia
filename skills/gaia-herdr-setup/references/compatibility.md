@@ -1,0 +1,34 @@
+# Compatibility and enforcement boundaries
+
+Declared target: **Herdr host 0.9.5 + herdr-projects plugin 1.0.1**. Plugin baseline: `v1.0.1`, peeled commit `b4989c7423f6b48bf6e82736e7b749c285d2e65a`. Host `v0.9.5` resolves to `2ecf19a92fc3a7fff75b6ce3655ef04f4625ec01`. The plugin manifest requires host >=0.9.3 on linux/macos: the declared host meets that version gate, but this pair has not been runtime-tested here. Treat the versions as user-provided facts; verify actual binaries/server without asking the same question again. Do not conflate host and plugin versions or upgrade/downgrade them incidentally.
+
+The original `eliasstravik/herdr-projects` repository redirects to `eliasstravik/shepherdr`. Legacy `PROJECT.md`/`thread_agent` workflows and current upstream main are not this pinned configuration model.
+
+Paths below refer to [the pinned source tree](https://github.com/eliasstravik/shepherdr/tree/b4989c7423f6b48bf6e82736e7b749c285d2e65a).
+
+| Requirement | v1.0.1 evidence | Setup boundary |
+|---|---|---|
+| Effective configuration | `crates/core/src/store/settings/lookup.rs`: task → user repo entry → global user → repo file → default; instructions accumulate, `none` resets broader instructions | Inspect all scopes. Repository config alone cannot guarantee effective settings. Settings are read per step, not frozen for the task. |
+| Repo-supported fields | `crates/core/src/store/settings_list.rs`: `.repo()` marks eligibility | Use installed schema, not a hardcoded field count. Board/coordinator/watcher settings are user-only. |
+| Roles and access | Default worker Claude, reviewer Codex; access `full` or `ask` | Preserve user preference. Neither a reviewer prompt nor `ask` establishes a read-only runtime. |
+| Repair and review | `review.rounds` defaults to 3 and controls several send-back paths | `0` stops automatic send-backs, including failed-check fallback. It does not provide an independent check-repair budget or change adversarial reviewer wording. Service/quota recovery is separate. |
+| Review selection | `review.when`: `repos`, `always`, `never` | Use proportional review, not compulsory agent review of every tiny edit. |
+| Merge and planning | `merge.by`: `you`/`itself`; `plan.approve`: `none`/`you`/`reviewer` | Reuse authorization. Do not require approval for every deterministic repair. Automatic merge requires explicit authority. |
+| Limits | `limit.time` per run; `limit.tokens` task aggregate checked at turn boundaries; `board.agents` board workers | Do not advertise an instantaneous hard cap or complete accounting for nested harness agents. |
+| Direct execution | `crates/flow/src/coordinator/rules.rs` defaults to task creation, direct execution on explicit request | Automatic small-task routing requires a patch, including a safe project CWD and writer ownership. Appended instructions alone do not override fixed rules reliably. |
+| Dependencies | `crates/flow/src/after.rs`, `after/pass.rs` use board completion semantics | Preserve cycle checks. Artifact/commit/evidence-sensitive edges require schema and start-time validation. Reports can legitimately satisfy report edges without merges. |
+| Completion | `crates/flow/src/finish/turn_ended.rs` uses hooks/transcripts, stale-round guards, event watermarks, locks, and stage | Preserve existing guards. Do not claim screen idle alone completes a task. |
+| Check purity | `crates/flow/src/finish/pipeline.rs` may commit tracked modifications after passing a check | Separate intentional generation from verification. Patch enforcement to reject unexpected changes and verify the final tree. |
+| PR recovery | In 1.0.1, pipeline calls `finish/already.rs` to adopt an open PR for the head branch when creation returns no URL; already-on-main/no-change/archive cases are handled | Preserve and test existing recovery (`tests/pull_requests_already.rs`). Test crash windows and head/base/task identity before proposing additional patches. Do not claim adoption is absent or full idempotency has been verified. |
+| Claude helper recovery | 1.0.1 adds mid-turn helper return recognition and `actions/finish_stuck.rs`; `tests/finish_missed.rs` covers recovery | Preserve this behavior; do not recreate a fix based on 1.0.0 assumptions. |
+| Reviewer brief | `crates/flow/src/finish/review_brief.rs` uses adversarial wording and commit-pinned verdicts | Keep commit attribution; separate verification from bounded repair. |
+| Harness hooks | `crates/core/src/agents/adapter.rs` preserves Claude user hooks; existing Codex notify can use transcript fallback | Reuse adapters, preserve hooks, avoid two completion owners. Probe installed harness versions. |
+| Host Codex detection | Herdr 0.9.5 release notes remove host-installed Codex turn hooks and restore screen-based host status detection | Distinguish host integration from Projects notify/transcript completion. Never delete Projects/user hooks merely because host hooks changed; inspect ownership before integration updates. |
+| Automations | `docs/automations.md`: local timezone; missed events over five minutes skipped; overlap/loop guards exist | Declare timezone and missed-run policy. Do not promise catch-up. Goal/workflow/loop are proposed concepts here, not asserted v1.0.1 commands. |
+| Local builds | `bin/run.sh` chooses fresh local build, downloaded version, or download/fallback | Local source edits can change selection. Require strict-local selection/build identity for a reliable fork. `HERDR_PROJECTS_RELEASES` selects a release source, not proof of integrity. |
+
+Do not ship universal copy-paste settings: feature stage, upper-scope overrides, and authorization change suitable values. In this baseline, `review.rounds`, `review.when`, `merge.by`, and `plan.approve` lack `.repo()`; do not write them into a repository settings file. A user-level repository entry is a different scope. `check.again` is repo-eligible. Re-probe these permissions for other versions.
+
+The pinned installation documentation uses `herdr plugin install eliasstravik/herdr-projects --ref v1.0.1`; local checkouts use `herdr plugin link "$PWD"` and `sh bin/run.sh install`. These mutate installation state. Verify support and rehearse in isolation; do not use them as probes. A checkout is not proof of which executable a running keeper uses.
+
+Sources: [plugin manifest](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/herdr-plugin.toml), [host release](https://github.com/herdrdev/herdr/releases/tag/v0.9.5), [plugin 1.0.0 → 1.0.1 diff](https://github.com/eliasstravik/shepherdr/compare/v1.0.0...v1.0.1). The diff leaves settings_list.rs, settings/lookup.rs, coordinator/rules.rs, after.rs, after/pass.rs, adapter.rs, review_brief.rs, and bin/run.sh unchanged; pipeline changes add recovery without removing the check-generated commit behavior. The three P0 recommendations therefore remain applicable at source level.
