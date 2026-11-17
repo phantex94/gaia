@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gaia Herdr Setup"
+  short_description: "Inspect a repo and tailor Herdr to Gaia principles"
+  default_prompt: "Use $gaia-herdr-setup to inspect this repository and propose a version-aware Herdr setup for my goal."
