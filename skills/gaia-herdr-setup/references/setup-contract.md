@@ -4,6 +4,8 @@
 
 Inspect repository path, principles, installed versions, effective settings, active work, target feature, acceptance evidence, and execution authority. Record unknowns.
 
+For this user's target, retain the declared pair Herdr 0.9.5 / herdr-projects 1.0.1. Track declaration, source evidence, and local observation separately. Verify the running host server as well as host CLI, plugin checkout/launcher/keeper, and harness versions. A valid minimum-version comparison is not an integration-test result. For other users, discover their actual pair rather than applying this target universally.
+
 Ask only decisions that change the plan, at most three per round:
 
 1. Which feature and observable outcome are required; is delivery research, reusable, or production?
@@ -41,6 +43,10 @@ Create a receipt only when applying changes, at an agreed repo-local metadata pa
   "setup_id": "alpha-cli-setup-001",
   "mode": "upstream",
   "phase": "planned",
+  "declared_host_version": "0.9.5",
+  "declared_plugin_version": "1.0.1",
+  "observed_host_server_version": null,
+  "observed_plugin_runtime_version": null,
   "observed_upstream_commit": null,
   "feature": "alpha-cli",
   "feature_stage": "research",

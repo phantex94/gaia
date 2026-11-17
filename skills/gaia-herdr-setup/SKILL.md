@@ -11,7 +11,7 @@ Treat the repository's development principles as requirements. Adapt Herdr to th
 
 - Read applicable `AGENTS.md`, development principles, manifests, checks, and current diff. Locate the target feature. Preserve user changes.
 - Inspect installed versions, executable/plugin paths, local patches, configuration scopes, hooks, and active work. Avoid secrets and full environment dumps. Prefer file inspection; live board queries can perform housekeeping.
-- Read [compatibility.md](references/compatibility.md). Treat its v1.0.0 baseline as evidence about that commit only. Probe installed help/schema before generating commands or settings. Mark unverified capabilities `unknown`.
+- Read [compatibility.md](references/compatibility.md). The user's declared pair is Herdr host 0.9.5 plus herdr-projects plugin 1.0.1. Record host CLI/server and plugin checkout/launcher/keeper separately; do not ask the user to repeat these versions. Treat the pinned source as evidence, not proof of the local runtime. Probe actual help/schema before generating commands or settings. Mark unverified capabilities `unknown`; do not silently upgrade, downgrade, or substitute current upstream main.
 - Classify each target feature separately as research, reusable, or production. Do not infer readiness from directory names or test-file existence.
 
 ## Resolve missing decisions
