@@ -1,123 +1,145 @@
 # Starting a new project: skeleton, efficiency, and incremental delivery
 
-Use this guideline when starting a new project or a rewrite. It complements `quant-development-and-agent-collaboration.md` (called "the principles" below), which owns the domain invariants, dependency design, reproducibility, repository memory, and coordinator roles. This document does not restate those. It names the concrete artifacts to create on day zero, the budgets that keep computation efficient, and the ladder from a first working slice to full scope.
+Use this guideline when starting a new project or a rewrite. It complements `quant-development-and-agent-collaboration.md` (called "the principles" below), which owns domain invariants, dependency design, reproducibility, project memory, and agent responsibilities. This document specifies artifacts, budgets, and delivery gates.
 
-Three failure modes motivate it:
-- growing feature by feature without contracts;
-- stopping short of the real output channel;
-- adding operations after go-live.
+Prevent three failure modes: accumulating features without contracts, stopping before the real output channel, and adding operations after go-live. Use `schemas/` for contracts, `core/` for domain computation and composition, `cli/` for commands, and `adapters/` for external effects.
 
-Each produces systems that work in tests but fail in production, or that end up wrapped around the systems they were meant to replace.
-
-Vocabulary follows the principles' responsibility map: `schemas/` (contracts), `core/` (domain computation and composition), `cli/` (commands), `adapters/` (external effects).
+Read enforcement labels as follows: **Check** means an automated structural or policy check; **Test** means an executable behavioral or performance test; **Review** means inspection of meaning, scope, or evidence.
 
 ## 1. Day-zero artifacts
 
-### Before the first domain commit
+### Match the gate to the work
+
+Keep PIT, strict inputs, explicit parameters, missing-value semantics, and declared evaluation splits in every stage. Apply the foundation checklist to the first reusable slice; do not require a deployment framework before exploring an isolated hypothesis. [Check / Review]
+
+| Stage | Required before advancing | Enforced by |
+|---|---|---|
+| Exploration | Read-only versioned PIT inputs, code and effective configuration records, declared splits, and a basic independent reference; keep experimental outputs separate from production | Check / Test |
+| Reusable component | Boundary and state contracts, causal and idempotency tests, reproducible entry points, and target-scale budgets | Check / Test |
+| Production | Complete the foundation and go-live checklists, including publication, recovery, monitoring, and operational ownership | Check / Test / Review |
+
+### Before the first reusable domain slice
 
 | Artifact | Done when | Enforced by |
 |---|---|---|
-| A phase-zero contract document: layers, boundary contracts, conventions, layout, and the delivery ladder (section 8), approved by the human | Approved and linked from the repository instructions | Review |
-| Layer table with downward-only imports, covering all shipped code including deployment and operations tooling | The import checker reports zero violations with an empty baseline | Check |
-| Package shape: each package that exists has a public `api` module whose exports are its contract, and a README with responsibility, inputs and outputs, and failure reasons. No package is created before it has content | A check confirms every package has both | Check |
-| Failure model: one business-refusal type that broad error handlers cannot swallow, with its own exit code. Programming errors use ordinary exceptions | A contract test shows a refusal passing through a broad handler | Test |
-| Boundary contracts for every input and the output (principles §1, §4), including each input's owning job and freshness limit | Each rule has an accepting case and a refusing case | Test |
-| One implementation point for each convention, such as units, rounding, calendar, and price basis | Each guard has a refusing test | Test |
-| Parameter template (section 4) and strict loader | The loader refuses a missing field, an unknown field, and a wrong type | Test |
-| CLI skeleton with the exit-code table (section 5) | `<tool> --help` runs and the table is in the CLI README | Review |
-| Test layout, pre-push selection, CI, and a seeded synthetic reference dataset | Pre-push checks and CI pass | Check |
-| Style checks for every rule that can be checked mechanically | The style checker reports zero findings | Check |
+| Human-approved phase-zero contract covering layers, the first slice's boundaries, conventions, layout, and delivery ladder (§8) | Approved and linked from repository instructions | Review |
+| Allowed import table covering shipped code, deployment, and operations tooling | No forbidden imports or cycles; no unreviewed exemptions | Check |
+| Explicit public interfaces and responsibility documentation for actual packages | Inputs, outputs, and failure reasons are documented; no empty speculative packages | Check / Review |
+| A business-refusal type and its own exit code; ordinary exceptions for programming errors | Broad handlers propagate refusal or map it explicitly; none convert it to success | Test |
+| Boundary contracts for the slice's inputs and output, including input owner and freshness | Each rule has an accepting and a refusing case | Test |
+| One implementation point for each convention, including units, rounding, calendars, price basis, and availability marking | Guards reject invalid inputs and repeated normalization | Test |
+| Immutable parameter definitions and a strict loader (§4) | Missing fields, unknown fields, and wrong types are refused | Test |
+| CLI skeleton, documented exit codes, and default Dry-run behavior (§5) | Help runs; a command without an explicit write flag has no business write | Test |
+| Test layout, pre-push selection, CI, and a seeded nondegenerate reference dataset | Relevant checks pass and their scope is recorded | Check / Test |
+| Mechanically enforceable style and boundary rules | Checkers report no violations | Check |
 
 ### Before go-live
 
 | Artifact | Done when | Enforced by |
 |---|---|---|
-| Environment layout: production root, research root, secret location, and retention rules for run outputs | No production input resolves outside the production root. The release is built from a tag and excludes tests, docs, and dev tools | Check |
-| The thin slice (section 8) writing to the real output channel in a test environment, with build, cutover, and rollback scripts | One rehearsed cutover and one rehearsed rollback | Rehearsal |
-| Operations: stale required inputs block publishing; every external source declares its failure behaviour (retry, record a gap, or block); alerts reach a person | Each failure is rehearsed once, and a person confirms receiving the alert | Rehearsal |
-| For a rewrite: a shadow-run period, written cutover criteria, and a retirement date for the old system | The criteria are met and recorded | Review |
+| Environment layout, secret location, and run-retention rules | Production inputs resolve within approved production roots; the release pins a tag and exact code revision and excludes development tools | Check |
+| Thin slice writing to the real output channel in a test environment; build, cutover, and rollback scripts | Cutover and rollback rehearsals pass; irreversible external effects have a separate recovery procedure | Test / Review |
+| Input freshness, failure behavior, alerts, and operational owners | Stale required inputs block publication; retries, gaps, and refusal are exercised; a recipient confirms alerts | Test / Review |
+| Atomic publication and recovery protocol (§5–6) | Duplicate, concurrent, and interrupted attempts cannot duplicate outputs or publications | Test |
+| Rewrite cutover criteria, shadow-run period, and old-system retirement plan | Criteria are met and recorded | Review |
 
 ## 2. Data flow
 
-Principles §1–3 define the rules. These are the artifacts that carry them.
-
-- **A node table.** One table lists each computation node with its inputs, kind (incremental, recursive, or full history), and lookback. Execution order and revision impact are computed from it.
-- **One availability function.** Each dataset's availability rule lives in its contract in `schemas/`, and a single function applies it. Its result carries a marker, so a second application is refused.
-- **Append-only revisions.** New data or corrections add a version. Compaction writes a new version and leaves the old one readable until nothing references it.
-- **Pure nodes with a seed.** Batch and incremental runs call the same function. An incremental step passes a shorter window, plus a seed of the node's earlier output for recursive nodes.
-- **Domains meet in the composition layer.** Domain modules do not import each other. The composition code passes one domain's output to another as an argument or a stored artifact.
+- **Declare each node.** Record inputs, outputs, computation kind (incremental, recursive, or full history), lookback, sufficient state, and coupling axes (`per-instrument` or `cross-sectional`, with grouping keys). Derive execution order from the computational DAG. Keep execution feedback in the state machine defined by principles §2. [Check / Review]
+- **Mark availability once.** Keep each dataset's availability rule in `schemas/`; apply it through one canonical function and attach a marker. Refuse repeated marking or lag application. Distinguish that normalization from repeatable as-of queries at different decision cutoffs; never treat a marker as proof that all rows are visible at every cutoff. [Check / Test]
+- **Version revisions.** Add a new immutable revision for new or corrected data. Compaction creates a new version; keep referenced old versions readable. Declare each node's revision-impact and recomputation rule, including propagation through recursive state and model refits; lookback alone is insufficient. [Check / Test]
+- **Separate outputs and state.** Define stateful computation as `(inputs_t, state_{t-1}, params) -> (outputs_t, state_t)`; for an Alpha node, the output is `alpha_t`. Preserve sufficient state, such as counts, moments, Gram matrices, or window buffers, rather than only the previous business output. Batch, Backfill, and Step share mathematical and state contracts, not necessarily one function implementation. [Test / Review]
+- **Anchor recovery.** Load the committed `state_{t-1}` snapshot read-only, pinned to its declared lineage. Rerunning time `t` must use that same predecessor, never an already advanced `state_t`. Stage output and state together and expose them through one atomic manifest commit (§6); never advance state in place. [Check / Test]
+- **Key randomness.** Derive reproducible random streams from `(seed, node_id, decision_time)` using a declared stable derivation; add stable instrument or purpose subkeys when needed. Do not use a sequential global RNG, process-dependent hashing, worker order, or chunk boundaries to choose draws. These are control keys, not hashes of dataset contents. [Check / Test]
+- **Keep As-Traded immutable.** Reproduce historical published signals from the original decision cutoff, input revisions, code, configuration, model, and predecessor state. Write late-data or correction results to a new `vintage`; never overwrite the historical As-Traded ledger. [Check / Test]
+- **Compose through declared interfaces.** Pass outputs through explicit public dependencies or the composition layer. Reject cycles, private-interface imports, and undeclared data reads; a shared adapter does not authorize a higher-level node to bypass its declared inputs. [Check / Test]
 
 ## 3. Layers and composition
 
-- The composition layer (drivers, runners) contains no arithmetic on business data. When a driver starts computing, move that code into the domain module that owns it.
-- Validate once at the boundary, then trust the contract inside. Internal code carries no defensive type checks or silent defaults.
-- Use one vocabulary for fields across modules, and represent missing values as missing, never as zero or a sentinel.
-- Add a registry or extension point only where at least two implementations already exist.
+- Keep business arithmetic out of drivers and runners; move it to the owning domain module. [Check / Review]
+- Strictly parse and normalize external data and configuration once at the boundary. Do not repeat defensive type parsing inside or introduce silent defaults. Still check invariants that can fail during computation, such as nonfinite results, infeasible solutions, or invalid state transitions. [Check / Test]
+- Use one field vocabulary across modules. Represent missing values as missing, never as zero or a sentinel. [Check / Test]
+- Introduce abstractions for demonstrated variation or a meaningful external boundary. Prefer narrow interfaces; add a registry only when actual consumers need discovery or selection. Do not require two implementations before defining a necessary interface. [Review]
 
 ## 4. Parameter template
 
-- Each algorithm has one immutable parameter class next to it. Every field carries a one-line comment with its unit and meaning.
-- Semantic parameters have no defaults. Engineering parameters such as chunk size or worker count may have defaults.
-- Each purpose has one configuration file that lists every field, with comments. The loader validates it against the parameter classes, and fields that must agree across sections are checked together. An environment differs from the template only by an explicit overlay of the fields that differ, never by a copied file.
-- The signature order is business inputs, then the parameter object, then keyword-only runtime switches. There are no pass-through keyword dictionaries, and multiple results come back as named, immutable records.
-- Writes to production require literal values (production environment and publishing explicitly enabled). No force flag bypasses this.
+- Place one immutable parameter class next to each algorithm. Explain every field's unit and meaning. [Check / Review]
+- Give semantic parameters no defaults. Engineering parameters such as chunk size or worker count may have defaults; record their effective values when they affect numerical results. [Check / Test]
+- Maintain one complete configuration template per purpose. Validate it against parameter classes, check cross-section consistency, and use explicit environment overlays rather than copied files. [Check / Test]
+- Order function arguments as business inputs, the parameter object, then keyword-only runtime switches. Do not pass through `**kwargs`; return named immutable records for multiple results. [Check]
+- Permit a `config_digest` of canonical effective parameters and configuration. Declare serialization, field order, numeric representation, and hash algorithm; verify that equivalent configurations produce the same digest and changed values change the identity. Dataset references may be explicit revision IDs; never embed dataset contents for indirect hashing. Apply the dataset prohibition in §6. [Check / Test]
+- Require explicit production environment and publishing values for production writes. Do not provide a force flag that bypasses these guards. [Check / Test]
 
 ## 5. Command-line interface
 
-- One entry point shaped `<tool> <domain> <action>`. Schedulers and operators call only the CLI.
-- Shared options are defined once as reusable option types and imported by every domain.
-- Commands that write show their plan by default and act only with an explicit write flag.
-- Each run writes to a new run directory named by section 6. A completed run is never overwritten. An interrupted run resumes in place according to its declared restart rule (principles §4).
-- One documented exit-code table separates success, retryable failure, permanent failure, and business refusal.
-- Development tools live outside the shipped package and are not CLI commands.
+- Provide one operational entry point shaped `<tool> <domain> <action>`. Keep it thin. A scheduler may call the same application API when needed; do not duplicate domain logic or bypass publication guards. [Check / Review]
+- Define shared options once and reuse their types across domains. [Check]
+- Make writing commands default to Dry-run: show the plan and perform no business writes without an explicit write flag. Report the logical publication key and affected destination. [Test]
+- Create append-only run records with readable names (§6). Resume an interrupted run by appending a new attempt record and new staged artifacts; never rewrite earlier evidence or completed artifacts. A new attempt is not a new logical publication. [Check / Test]
+- Separate success, retryable failure, permanent failure, and `business refusal` in the documented exit-code table. Propagate refusal to the application entry point and map it to its own code; never report it as success. [Test]
+- Require a publication idempotency key at the sink. After a crash or ambiguous response, reconcile the sink's committed status before retrying; do not infer failure from a missing local success record. Refuse unauthorized replacement and conflicting same-key publication. [Test]
+- Keep development-only tools outside the shipped package and operational CLI. [Check]
 
 ## 6. Identity and run records
 
-- Identify runs, caches, and artifacts with readable parts: a name, a date, a sequence number, the input revision numbers, and the parameter-set name. Never use hashes or content checksums. Verify by comparing content directly.
-- Every run directory holds its effective configuration, the code tag, the input revisions it read, and its own log. This record is what reproduction starts from.
-- A cache is valid for the input revisions and parameter set named in its directory. Changing either produces a new cache name, not an in-place refresh.
+- Use human-readable names, dates, sequence numbers, revision IDs, and parameter-set names for runs and artifacts. Do not use bare-hash directory names. Distinguish the physical attempt ID from the logical publication key. [Check]
+- Identify one logical output snapshot by `(node_id, decision_time, vintage, config_digest)`. Pin the node implementation, schema, input revisions, model, and initial state in its lineage; version the identity explicitly when that lineage changes. Within each snapshot, enforce the declared row key, including instrument identity for a panel, so retries cannot add duplicate rows or double weights. [Check / Test]
+- Enforce uniqueness with an atomic conditional commit or equivalent sink transaction. An identical rerun may short-circuit or atomically point to a content-identical artifact. Publish output and state through one committed manifest reference; readers must never observe a mixed pair. Refuse conflicting lineage or content under the same key with `business refusal`; numerical tolerance does not authorize replacement of a committed result. [Test]
+- Store effective configuration and its permitted digest, exact code revision and tag when present, schema and implementation versions, dataset and partition revisions, model and predecessor-state IDs, numerical environment, and attempt logs in the run record. Make the record sufficient to select the original inputs and state. [Check]
+- **Do not hash datasets.** Prohibit content hashes, checksums, row hashes, and partition fingerprints for raw or derived datasets, including market data, financial data, features, and Alpha outputs. Identify data and state snapshots through explicit immutable revision IDs, partition manifests, schemas, and source/predecessor references. Do not disguise data as configuration to hash it. This rule does not prohibit Git's code revision identifiers. [Check / Review]
+- Validate data using contracts, row-key uniqueness, row counts, time coverage, lineage, and targeted content comparisons in acceptance tests. These checks do not establish cryptographic content integrity. Do not require full-history byte comparisons or repeated complete rereads on each run. [Check / Test]
+- Reuse a cache only when input revisions, node implementation, schema, effective configuration, model, and initial state identity all match. Changing any dependency creates a new cache version; never refresh a published version in place. A parameter-set name alone is not a cache key. [Check / Test]
 
 ## 7. Efficiency and memory
 
-Correctness comes first. Every optimisation is then proven equal to the result before it, within that output's declared exactness class.
+Prove each optimization against the declared numerical and decision contract before accepting its performance gain. [Test]
 
-1. **Declare budgets.** For each stage, write down a time and peak-memory budget at target scale. A benchmark script records wall time and peak memory. Its results are kept with the run records, and a stated regression threshold fails the check.
-2. **Make incremental cost scale with new data.** A daily step reads only its declared tail window, and its cost must not grow with history length. Test at several times the expected data size.
-3. **Bound every batch.** Chunked computations, accelerator batches, worker pools, and caches each have a named size or byte limit. Peak memory does not grow with window length or universe size.
-4. **Read only what is needed.** Scan columnar storage lazily, and push date and column filters down.
-5. **Lay out storage for its readers.** Each dataset contract names its dominant read key, and storage is partitioned by it. Writes go to a temporary file followed by a rename.
-6. **Profile before optimising.** Hot paths are vectorised with no per-row interpreter loops. Choose precision per array, and watch for hidden copies and reshapes.
-7. **Shard where nothing crosses shards.** Parallelise along an axis with no cross-shard dependency, and prove that the merged result matches the single-process result. Measure before moving work to different hardware.
-8. **State exactness per output class.** Integer outputs such as quantities, memberships, and dates match exactly. Floating outputs match bit for bit on the same machine and configuration, or within a declared tolerance across machines and thread counts. Pin threads and seeds where exactness is required.
-9. **Do not build overhead you will later optimise away.** Checks that re-read or re-verify content at every step cost more than the computation they protect.
+1. **Declare budgets.** Record target-scale wall time, persistent state size, peak temporary memory, and relevant communication cost separately. Benchmark on a named environment and fail declared regression thresholds. [Check / Test]
+2. **Classify historical cost.** For incremental nodes, read only declared new data, tail windows, and sufficient state; do not rescan growing history. For full-history training or refits, declare scan complexity, frequency, and budget instead of promising constant cost. [Test / Review]
+3. **Bound working sets.** Set byte or count limits for chunks, accelerator batches, worker pools, and caches. Express memory growth in lookback, active universe, feature dimensions, and state size. Keep streamed working memory independent of total history; explicitly budget full-history stages. Do not claim that exact rolling state is independent of window or universe size. [Check / Test]
+4. **Read only what is needed.** Scan columnar storage lazily and push date and column filters down. [Check / Test]
+5. **Match storage to readers.** Declare dominant read keys and partition accordingly. Stage immutable writes, then atomically commit their manifest reference; use rename only where the storage backend guarantees the required atomicity. [Test / Review]
+6. **Profile before optimizing.** Vectorize or compile measured hot paths. Choose precision per array and measure hidden copies and reshapes. [Test / Review]
+7. **Respect coupling.** Do not blindly split cross-sectional operators along the instrument axis. Declare valid groups and any cross-shard reduction, preserve required ordering, and test merged results against the unsharded reference. Measure before changing hardware. [Check / Test]
+8. **Separate repeatability from equivalence.** Require deterministic reruns of the same implementation under pinned inputs, state, and numerical environment. Compare discrete outputs exactly. For different implementations or environments, declare justified floating-point tolerances before measuring; require bitwise equality only where the contract demands it. Test downstream ranking, thresholds, constraints, rounding, and order decisions separately; a small numeric error does not prove equal decisions. [Test / Review]
+9. **Avoid repeated validation overhead.** Reuse validated immutable revisions and their lineage metadata. Apply §6 validation at declared boundaries; do not add repeated full-data scans or dataset hashing. [Check / Test]
 
 ## 8. From MVP to full scope
 
-Climb a ladder. Each rung has an exit criterion. The boundary contracts stay frozen while scope widens, and a written out-of-scope list says what is deliberately left out.
+Deliver a verifiable capability at each rung. Preserve compatibility or explicitly version and migrate changed contracts; do not freeze a mistaken first design. Record what remains out of scope. [Test / Review]
 
-| Rung | Scope | Exit criterion |
+| Rung | Scope | Exit criterion | Enforced by |
+|---|---|---|---|
+| 1 | Smallest nondegenerate synthetic sample, all stages; enough instruments and dates for cross-sectional structure, warmup, and state transitions | Independent reference agrees; PIT, state, and basic idempotency checks pass | Test |
+| 2 | Small real sample, all stages, real write in a test environment | Independent references agree; cutover, rollback, and recovery rehearsals pass | Test |
+| 3 | Full universe | Coupling semantics and time, state, and working-memory budgets hold | Test |
+| 4 | Full history | Batch, Backfill, and Step satisfy their declared equivalence contract; full-scale budgets hold | Test |
+| 5 | Production | Go-live artifacts complete; a rewrite passes the shadow period | Check / Test / Review |
+
+For cross-sectional projects, include multiple industries, suspended instruments, missing observations, and relevant market-calendar gaps in the first sample. Retain empty, single-row, and single-instrument cases as boundary tests rather than using them as the sole MVP. [Test / Review]
+
+Apply these verification rules at each relevant rung:
+
+- Take expected values from hand calculations, known formulas, an independent implementation, or a previous system frozen at a revision. Do not generate expectations from the code under test or silently reuse its disputed alignment logic in the reference. [Test / Review]
+- Test boundary contracts, node mechanics, and the intended operational entry point. Use small read-only real fixtures with provenance, and fakes for external systems. Give each correctness rule accepting and refusing cases. [Test]
+- Cover instrument lifecycle events, late or revised data, calendar gaps, and state recovery in the seeded synthetic dataset. Require a written reason and a new fixture version when expected values change. [Test / Review]
+- Perturb inputs available only after the decision and verify that the earlier decision is unchanged. Test repeated availability marking and malformed boundary inputs as refusal cases. Permit bounded input or crash fault injection; do not use code mutation testing or multi-round adversarial review loops. [Test / Review]
+- Run the three idempotency scenarios below from the first stateful reusable slice onward. Compare outputs, state, row uniqueness, aggregate weights, and publication counts; apply §7 numerical contracts without weakening same-key publication rules. [Test]
+
+| Scenario | Required observation | Enforced by |
 |---|---|---|
-| 1 | One instrument, one date, synthetic data, every stage end to end | The output passes the output contract |
-| 2 | Small real sample, every stage, real write in a test environment | Matches independent references. Cutover and rollback rehearsed |
-| 3 | Full universe | Within time and memory budgets |
-| 4 | Full history | Batch equals incremental. Budgets hold at full size |
-| 5 | Production | Before-go-live artifacts complete. Shadow period passed for a rewrite |
+| Same decision day twice, including concurrent attempts | One logical result and one committed state transition; no duplicate rows, weights, or downstream publication | Test |
+| Crash and recovery before commit, and after sink commit but before local acknowledgement | No mixed output/state pair; retry reconciles committed status and does not publish or advance twice | Test |
+| Full Batch versus segmented Batch plus daily Step, Backfill, and repeated days | Overlapping outputs and state agree under identical warmup, PIT view, lineage, and the declared numerical contract | Test |
 
-Testing rules for every rung:
-- Expected values come from an independent source: hand calculation, a known formula, a second implementation, or a previous system frozen at a tag. They never come from the code under test.
-- Contract tests cover boundary contracts and correctness rules. Module tests cover mechanics. Fixtures are small, read-only real samples with a record of their origin. Fakes stand in for external systems.
-- Every rule has an accepting case and a refusing case. Include edge sizes: empty input, a single row, a single instrument.
-- The seeded synthetic dataset covers the domain's hard cases, such as instrument lifecycle events, late or revised data, and calendar gaps. Changing its expected values requires a written reason and a version entry.
-- Perturbing inputs after the decision time is a behavioural test and is required (principles §1). Mutating code to test the tests, and adversarial review loops, are not used.
-- The fast suite has a time budget and runs before every push. Acceptance runs on the machine and data scale the system runs in production, and the run record names that machine.
+- Keep the fast suite within its time budget and run it before every push. Run acceptance at production-representative scale and record the environment and exact integrated revision. Worker-branch evidence alone is insufficient after integration. Distinguish executed checks from tests only specified for future implementation. [Check / Test]
+- Choose the fastest viable execution mode using principles §7: do small tasks directly, delegate independent medium tasks only when parallel savings exceed coordination costs, and use a persistent task DAG for large or long-running work. Keep the task DAG distinct from the platform's computational DAG and execution state machines. [Review]
+- For persistent work, record dependency status, versioned inputs, outputs, checkpoints, retry rules, and acceptance conditions. Use available workflows for repeatable steps, goals for durable objectives, cron for future wakeups, and bounded loops for iteration. Cron does not establish dependency readiness; a loop needs an exit condition and iteration or time budget. Verify capabilities before use, deduplicate repeated wakeups, and report a scheduled task as scheduled rather than completed. Reduce concurrency when coordination becomes slower than direct work. [Check / Test / Review]
 
 ## 9. Code style
 
-Follow the human's standing rules:
-- the Zen of Python;
-- light comments: a header of at most five lines and one-line docstrings;
-- no hashes in any form;
-- short, shallow functions;
-- exceptions caught only at real I/O boundaries, with the reason recovery is safe.
-
-A greenfield repository names one reference repository or module as its style model until its own code can serve. Every rule says whether a checker or a reviewer enforces it. Rules left to review drift, so check them from day zero wherever possible.
+- Follow the Zen of Python; keep functions short and nesting shallow. [Review]
+- Keep comments concise, but explain nonobvious mathematics and temporal semantics. Allow multiline docstrings in `schemas/` and quantitative operators; document tensor axes, units, degrees of freedom, and missing-value propagation where applicable. Do not trade necessary meaning for a line-count rule. [Check / Review]
+- Permit parameter and configuration hashing only within §4 and §6. Enforce the dataset-hashing prohibition in every layer. [Check]
+- Catch exceptions at real I/O, application-entry, or task-supervision boundaries with an explicit recovery or reporting policy. Preserve business refusal and record failures; do not swallow errors or silently substitute results. [Test / Review]
+- Name a reference repository or module until the project has its own stable style. Assign each rule a checker, test, or reviewer; automate mechanical rules early and record the limits of each check. [Check / Review]
