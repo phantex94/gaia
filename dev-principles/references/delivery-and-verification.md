@@ -51,14 +51,16 @@ Before accepting an optimization, prove its numerical and decision behavior unde
 
 Bound chunks, accelerator batches, worker pools, and caches. State memory growth in lookback, active universe, dimensions, and state size. Stream working sets independently of total history; explicitly budget full-history fitting. Test beyond expected data scale where relevant. Do not claim exact rolling state is independent of window or universe size. [Check / Test]
 
-Use lazy columnar reads, pushed-down date/column filters, and partitioning matched to dominant read keys. Reuse validated immutable revisions. Avoid repeated historical scans and dataset hashing. Profile measured hot paths, vectorize or compile where useful, and inspect copies, reshapes, serialization, and repeated calls across interfaces. Measure before changing hardware. [Test / Review]
+Use lazy columnar reads, pushed-down date/column filters, and partitioning matched to dominant read keys. Reuse validated immutable revisions. Avoid repeated historical scans; never hash data. Profile measured hot paths, vectorize or compile where useful, and inspect copies, reshapes, serialization, and repeated calls across interfaces. Measure before changing hardware. [Test / Review]
 
 Cross-sectional sharding needs valid grouping, reduction, ordering, and unsharded-reference comparison. Improve interfaces that force wasteful reads or copies rather than optimizing only kernels. See [performance design](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch20.html).
 
 ## Complete go-live evidence
 
-Pin the release's exact revision and tag; exclude development-only tools. Define production/research roots, secret location, and artifact retention. Reject production inputs outside approved roots. [Check]
+Pin the release's exact revision and tag; exclude development-only tools. Define production/research roots, secret location, and artifact retention. Reject production inputs outside approved roots, and check the inventory of every production read, including tokens, credentials files, and vendor mirrors, as defined in [configuration](configuration-and-identity.md). [Check]
 
-Rehearse actual output-channel writes in a test environment, atomic publication/recovery, stale-input refusal, source failure behavior, cutover, and rollback. A recipient must confirm receiving an alert; generating a local log is insufficient. Record operational owners and separate recovery for irreversible effects. Rewrites require written cutover criteria, a shadow period, and an old-system retirement plan. [Test / Review]
+Declare publication windows, during which nothing is deployed, cut over, or reconfigured, and the rule for which cycle is valid to publish. Releases and publishing tools refuse inside a window and for an expired cycle; never backdate, and no force option bypasses these gates. [Check / Test]
+
+Prove the real production path end to end once before relying on a schedule; a first scheduled run is not evidence. Rehearse actual output-channel writes in a test environment, atomic publication/recovery, the declared degradation bound and refusal beyond it, source failure behavior, cutover, and rollback. Test the exit-code table in [publication](publication-and-recovery.md) so a scheduler sees each child's business state. An alert names the failing input or round and its lag, and a recipient must confirm receiving it; generating a local log is insufficient. Record operational owners and separate recovery for irreversible effects. Rewrites require written cutover criteria, a shadow period, and an old-system retirement plan. [Test / Review]
 
 Work is complete after acceptance, not after scheduling or dispatch. Follow [collaboration](agent-collaboration.md) for task evidence and [scenarios](scenarios.md) for change-specific routes.

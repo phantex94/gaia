@@ -40,7 +40,10 @@ Deep module 的价值是让调用方更容易正确使用能力。例如，PIT �
 - 修订数据产生新版本。事后重算使用新的 vintage，不能覆盖当时实际发布的 As-Traded 记录。
 - 同一天重跑仍是同一个逻辑结果。新的 attempt 不能变成新的发布，输出与状态也不能出现混版。
 - 券商超时不代表拒单。本地事务无法单独保证远端恰好执行一次，必须按 adapter 的真实能力对账。
-- 数据集禁哈希是本项目要求，不是软件设计的普遍真理。允许的 config digest、Git 版本与禁用的数据内容指纹，边界由 [Configuration and identity](references/configuration-and-identity.md) 统一定义。
+- 默认任何形式都不用哈希：不做内容校验和、指纹、哈希清单或基于哈希的键，名称里也不出现类似哈希的 ID。配置用可读的 `param_set@seq` 命名，同一编号永远对应同一组取值；逻辑键由可读业务字段组成；Git 提交号只作为记录值，不作名称。细则见 [Configuration and identity](references/configuration-and-identity.md)。
+- 业务拒绝的退出码不能与命令行用法错误（2）相同，一个退出码只有一个含义；子进程退出 0 必须表示业务成功，一轮失败不能悄悄卡住后续轮次。见 [Publication and recovery](references/publication-and-recovery.md)。
+- 输入过期默认拒绝；只有事先声明的有界降级可以继续发布：写明负责人、最大滞后、最大条目数，告警点名面板及滞后。沿用值要标记，超出任一上限即拒绝。见 [Data and PIT](references/data-and-pit.md)。
+- 上线前先手工跑通一次真实生产路径，再依赖定时任务；声明发布窗口和有效周期，不补发过期周期；盘点所有生产读取路径。见 [Delivery](references/delivery-and-verification.md)。
 
 以上只提示易误读的地方，不替代对应英文契约。
 
@@ -48,7 +51,7 @@ Deep module 的价值是让调用方更容易正确使用能力。例如，PIT �
 
 探索阶段也要保证 PIT、数据划分、版本和基本独立参考，但不必先建完整部署框架。进入可复用阶段，再要求稳定接口、充分状态、幂等恢复和规模预算。上线前，必须验证真实输出渠道、告警送达、对账、切换和回滚。按 [Delivery](references/delivery-and-verification.md) 判断进入下一阶段的条件。
 
-coordinator 先按完整能力派工，再分配文件。共享语义要有唯一负责人；worker 分支测试通过，不等于最终集成结果正确。全局 `AGENTS.md` 保留共同约束，模块文档保存局部语义，任务记录保存证据。不要通过不断增加全局提示词补偿错误边界。详细流程见 [Agent collaboration](references/agent-collaboration.md)。
+coordinator 先按完整能力派工，再分配文件。共享语义要有唯一负责人；worker 分支测试通过，不等于最终集成结果正确。全局 `AGENTS.md` 保留共同约束，模块文档保存局部语义，任务记录保存证据。不要通过不断增加全局提示词补偿错误边界；项目规则放在项目的 `AGENTS.md` 和看板的仓库条目，全局设置和 coordinator 记忆只留指针。每个任务一份授权清单，做不到的动作在第一份计划里说明；前置条件失败即停止所有依赖它的破坏性步骤；截止任务无空闲槽位要立即说出；长任务脱离笔记本运行；本机身份不进提交。详细流程见 [Agent collaboration](references/agent-collaboration.md)。
 
 ## 这次重组如何保存原有内容
 

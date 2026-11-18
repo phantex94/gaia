@@ -1,8 +1,18 @@
 # Setup skill 评估记录
 
-评估日期：2026-11-17。范围：指令包结构、文档一致性和一次离线行为演练。未安装或构建 Herdr，未运行真实 keeper、harness hook、量化算子或生产任务。
+评估日期：2026-11-17，2026-11-18 重新定基线。范围：指令包结构、文档一致性和一次离线行为演练。未安装或构建 Herdr，未运行真实 keeper、harness hook、量化算子或生产任务。
 
-## 兼容性修正：宿主 0.9.5 / 插件 1.0.1
+## 重新定基线：宿主 0.9.5 / 插件 1.2.27（当前）
+
+2026-11-18 的只读审计发现本机实际运行 herdr-projects **1.2.27**（CLI、keeper、serve、board 同一程序），不是此前声明的 1.0.1。人工决定以 Herdr 0.9.5 + herdr-projects 1.2.27 为基线，默认不用任何形式的哈希，插件补丁暂缓。
+
+- **Check：已完成。** 标签 `v1.2.27` 指向发布提交（记录值 `4a351c7`）；manifest 最低宿主 0.9.3、平台 linux/macos。
+- **Check：已完成。** 在 1.2.27 源码中逐条复核 [版本对照](../../skills/gaia-herdr-setup/references/compatibility.md) 的能力与行号：review.rounds 仍同时限制检查返修、research 退回、评审循环和 fallback 接手；通过的检查改动仍会被提交；coordinator 仍默认建任务；仓库文件字段由 `.repo()` 决定（文档正文漏列 check.again 与 merge.pushTimeout）；PR 接管新增错误 base 拒绝；helper 识别移至 crates/core/src/agents/helpers.rs。
+- **Review：已修正。** 新增 1.2.27 的作用域与命令：coordinator 作用域与 `--project-coordinator`、`archive --repo`、worker/reviewer.fallback、review.mustFix、attempts.*、autopilot.*、access auto、merge.checks/sync。
+- **Review：已修正。** 收据、setup skill 与开发规范改为可读的 `param_set@seq` 和业务字段逻辑键；不再允许配置摘要。
+- **Test：未执行。** 未在此组合上做隔离运行演练或 smoke 任务。
+
+## 兼容性修正：宿主 0.9.5 / 插件 1.0.1（历史，已被上节取代）
 
 用户随后明确版本为 **Herdr 0.9.5 + herdr-projects 1.0.1**。此前使用 1.0.0 作为分析基线不适用于直接发布该用户的安装方案；以下旧演练仅保留为历史记录，不能算新组合的运行验证。
 
@@ -28,7 +38,7 @@
 
 - 仓库只有四份开发规范和终端配置；Herdr 版本只知“1.0 左右”。
 - 使用 Claude Code 与 Codex；小任务直接做；不要对抗循环，但希望检查失败可自动修。
-- 将来需要日更状态算子幂等；配置可 hash、数据集不可 hash。
+- 将来需要日更状态算子幂等；当时的规则是配置可 hash、数据集不可 hash（已被“任何形式都不用哈希”取代）。
 - 用户全局 review.rounds=3；仓库提议 review.rounds=0。
 - 用户已有 Codex notify；本地 checkout 有补丁但 CLI 身份未知。
 - 请求仅为 setup 方案。
@@ -40,7 +50,7 @@
 | review 与 repair 分离 | 识别 rounds=0 的副作用，未声称独立预算已经原生支持 |
 | 配置作用域 | 初次误当成只有优先级冲突；补充源码明确字段不支持 repo 文件后，定向复测正确拒绝该放置方式 |
 | 用户 hook 与本地补丁 | 保留 notify，要求验证 CLI/launcher/keeper 身份 |
-| 数据 hash 边界 | 保留数据禁止 hash，说明版本元数据不能替代不可变存储 |
+| 数据 hash 边界（历史规则） | 保留数据禁止 hash，说明版本元数据不能替代不可变存储 |
 | 缺少原文时的 diff | 初次指出说明不足；已明确允许标记为拟议变更清单，定向复测确认 |
 | 有界修复契约 | 已补充范围、预算、停止、最终树复查、证据和恢复要求；定向复测确认 |
 
