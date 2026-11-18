@@ -7,7 +7,7 @@
 2026-11-18 的只读审计发现本机实际运行 herdr-projects **1.2.27**（CLI、keeper、serve、board 同一程序），不是此前声明的 1.0.1。人工决定以 Herdr 0.9.5 + herdr-projects 1.2.27 为基线，默认不用任何形式的哈希，插件补丁暂缓。
 
 - **Check：已完成。** 标签 `v1.2.27` 指向发布提交（记录值 `4a351c7`）；manifest 最低宿主 0.9.3、平台 linux/macos。
-- **Check：已完成。** 在 1.2.27 源码中逐条复核 [版本对照](../../skills/gaia-herdr-setup/references/compatibility.md) 的能力与行号：review.rounds 仍同时限制检查返修、research 退回、评审循环和 fallback 接手；通过的检查改动仍会被提交；coordinator 仍默认建任务；仓库文件字段由 `.repo()` 决定（文档正文漏列 check.again 与 merge.pushTimeout）；PR 接管新增错误 base 拒绝；helper 识别移至 crates/core/src/agents/helpers.rs。
+- **Check：已完成。** 在 1.2.27 源码中复核 [版本对照](../../skills/gaia-herdr-setup/references/compatibility.md) 引用的路径与行号（多数读源码段落，少数读文件头注释）：review.rounds 仍同时限制检查返修、research 退回、评审循环和 fallback 接手；通过的检查改动仍会被提交；coordinator 仍默认建任务；仓库文件字段由 `.repo()` 决定（文档正文漏列 check.again 与 merge.pushTimeout）；PR 接管含错误 base 拒绝；helper 识别位于 crates/core/src/agents/helpers.rs。
 - **Review：已修正。** 新增 1.2.27 的作用域与命令：coordinator 作用域与 `--project-coordinator`、`archive --repo`、worker/reviewer.fallback、review.mustFix、attempts.*、autopilot.*、access auto、merge.checks/sync。
 - **Review：已修正。** 收据、setup skill 与开发规范改为可读的 `param_set@seq` 和业务字段逻辑键；不再允许配置摘要。
 - **Test：未执行。** 未在此组合上做隔离运行演练或 smoke 任务。
