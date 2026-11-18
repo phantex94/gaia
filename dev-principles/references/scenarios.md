@@ -32,6 +32,18 @@ Read [publication and recovery](publication-and-recovery.md). Use the broker's a
 
 State the adapter's guarantees and limits, including what happens if reconciliation cannot establish status. Code rollback does not reverse a trade. Test the declared refusal or recovery path with a broker fake, then obtain the required integration evidence before claiming production behavior. [Test / Review]
 
+## A scheduled job fails silently or stops advancing
+
+Read [publication and recovery](publication-and-recovery.md) and [delivery](delivery-and-verification.md). Compare the business state each run reached with what its exit code said; a child that exits `0` while its business outcome failed is the defect, not the symptom. Find whether one failed round blocks later rounds or later rounds hide it.
+
+Fix the exit mapping at the entry point and test it through the real entry point. Make the alert name the input or round, its lag, and the expected time, and confirm a person received it. A log line nobody reads is not an alert. [Test / Review]
+
+## Publish near a window or after a missed cycle
+
+Read [delivery](delivery-and-verification.md) and [publication and recovery](publication-and-recovery.md). Check the declared publication windows and which cycle is currently valid. Deploy, cut over, or change configuration only outside the windows.
+
+Publish only the currently valid cycle. Never backdate or publish an expired cycle, and never use a force option to pass a cycle or window gate. A missed cycle is reported as missed. Test that the gate refuses inside a window and for an expired cycle. [Test / Review]
+
 ## Optimize or move to different hardware
 
 Read [delivery](delivery-and-verification.md) and [computation](computation-and-state.md). Measure the actual limiting work, including I/O, copies, serialization, and repeated boundary calls. Set numerical and downstream decision tolerances before comparing implementations.
@@ -48,4 +60,4 @@ Preserve behavior or explicitly version changed contracts. Record why tightly co
 
 Read [architecture](architecture.md) and [delivery](delivery-and-verification.md). Use a sample large enough to express the actual mathematics. Keep exploration outputs isolated; add reusable contracts and recovery as the capability stabilizes.
 
-Before go-live, rehearse the real output channel in a test environment, stale-input refusal, alerts received by a person, publication/recovery, cutover, and rollback. For a rewrite, record shadow acceptance and old-system retirement. Before dispatching workers or handing off a long task, use [collaboration](agent-collaboration.md) to bound ownership and preserve evidence. [Test / Review]
+Before go-live, prove the real production path end to end by hand once, then rehearse the real output channel in a test environment, the declared degradation bound and refusal beyond it, alerts received by a person, publication/recovery, cutover, and rollback. Inventory every production read, including tokens and vendor mirrors, against the approved roots in [configuration](configuration-and-identity.md). For a rewrite, record shadow acceptance and old-system retirement. Before dispatching workers or handing off a long task, use [collaboration](agent-collaboration.md) to bound ownership and preserve evidence. [Test / Review]

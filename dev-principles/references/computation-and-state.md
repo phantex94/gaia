@@ -26,7 +26,7 @@ Load the committed `state_{t-1}` read-only. Rerunning time `t` always starts fro
 
 ## Make randomness independent of execution order
 
-Derive streams through a declared stable method from `(seed, node_id, decision_time)`. Use stable instrument or purpose subkeys, or canonical item ordering, where required. Do not select random draws through a sequential global RNG, process-dependent hashing, worker order, chunk boundaries, or earlier attempts. These are control keys, not dataset content hashes. Record the derivation and seed. [Check / Test]
+Derive streams through a declared stable method from `(seed, node_id, decision_time)`. Use stable instrument or purpose subkeys, or canonical item ordering, where required. Do not select random draws through a sequential global RNG, process-dependent hashing, worker order, chunk boundaries, or earlier attempts. The keys are readable fields; never derive them from data content. Record the derivation and seed. [Check / Test]
 
 ## Distinguish repetition, equivalence, and decisions
 

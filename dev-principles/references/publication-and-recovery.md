@@ -8,11 +8,11 @@ Use the logical snapshot identity and lineage defined in [configuration and iden
 
 Stage immutable output and state together. Publish them through one committed manifest reference so readers never observe a mixed pair. Use rename only when the storage backend guarantees the required atomicity. Never advance committed state in place. [Check / Test]
 
-Keep physical attempt records append-only. Recovery appends a new attempt and staged artifacts without rewriting earlier evidence or completed artifacts. New attempts retain the logical publication key. Ensure row-key uniqueness and prevent repeated rows, aggregate weights, accounting, and downstream publications. [Check / Test]
+Keep physical attempt records append-only. Recovery appends a new attempt and staged artifacts without rewriting earlier evidence or completed artifacts. New attempts retain the logical publication key: a readable tuple of business fields, such as `(strategy, trading_day, round)`, never a hash. Ensure row-key uniqueness and prevent repeated rows, aggregate weights, accounting, and downstream publications. [Check / Test]
 
 ## Reconcile before resending
 
-After a crash or ambiguous response, inspect the sink's committed status using a stable action or idempotency key. Missing local success evidence does not establish remote failure. A crash after remote acceptance but before local acknowledgement must not publish or advance state twice. [Test]
+After a crash or ambiguous response, inspect the sink's committed status using the readable logical publication key or the sink's own client-action identity. Missing local success evidence does not establish remote failure. A crash after remote acceptance but before local acknowledgement must not publish or advance state twice. [Test]
 
 A broker timeout is not a rejected order. An adapter can guarantee remote idempotency only with supporting service semantics or reconciliation that establishes the action status. Record those limits. Do not claim exactly-once external execution based on a local database transaction alone. Use the declared execution state machine for partial fills, rejections, acknowledgements, and subsequent actions. [Test / Review]
 
@@ -20,9 +20,21 @@ Code rollback does not undo external trades or publications. Rehearse a separate
 
 ## Reduce avoidable errors without concealing real failures
 
-Make matching retries a normal operation returning the committed result. Make atomic output/state reads a normal interface guarantee. Keep absent or stale required inputs, unavailable models, conflicting lineage, invalid transitions, infeasible optimization, and nonfinite results explicit failures. Do not silently fill defaults or report a refusal as success. [Test / Review]
+Make matching retries a normal operation returning the committed result. Make atomic output/state reads a normal interface guarantee. Keep absent required inputs, stale inputs beyond a declared degradation bound (see [data and PIT](data-and-pit.md)), unavailable models, conflicting lineage, invalid transitions, infeasible optimization, and nonfinite results explicit failures. Do not silently fill defaults or report a refusal as success. [Test / Review]
 
 Use an independent business-refusal type and exit code. Ordinary programming errors remain ordinary exceptions. Broad handlers must propagate refusal or map it explicitly at the application entry point. Catch exceptions at real I/O, application-entry, or task-supervision boundaries with a declared recovery/reporting policy. Preserve reasons and evidence. [Check / Test]
+
+Declare one exit-code table per project and test every row through the real entry point. Each code has exactly one meaning; the project chooses the numbers within these constraints: [Check / Test]
+
+| Outcome | Constraint |
+|---|---|
+| Success | `0`, and only when the business state is the intended one |
+| Ordinary failure | A non-zero code that is neither refusal nor usage error |
+| Usage error | `2`, reserved for the CLI framework's own argument errors; never reused |
+| Business refusal | A dedicated code distinct from `2` and from every other row |
+| Retryable or waiting states | Each its own code when callers act on them; two states never share one code |
+
+A parent process, scheduler, or watchdog reads a child's business state, not merely whether it ran. A child exits `0` only when its business outcome succeeded; a failed round reports failure even when the process itself ended cleanly. One failed round is reported and alerted on its own: it must not silently block later rounds, and later rounds must not hide it. [Test]
 
 This applies [defining errors out of existence](https://cactus-proj.github.io/A-Philosophy-of-Software-Design-zh/ch10.html) to API semantics without weakening quantitative correctness.
 
@@ -30,7 +42,7 @@ This applies [defining errors out of existence](https://cactus-proj.github.io/A-
 
 Provide a thin CLI shaped `<tool> <domain> <action>`. Schedulers may call the same application API when justified; they must not duplicate domain logic or bypass guards. Operational business capabilities need CLI workflows, not a command for every internal helper. Keep development-only tools outside the shipped operational package. [Check / Review]
 
-Writing commands default to Dry-run and report the plan, logical publication key, and affected destination. No business writes occur without an explicit write flag. Production writes additionally require explicit production-environment and publishing values; no force option bypasses them. Share reusable option definitions. Document exit codes for success, retryable failure, permanent failure, and business refusal. [Check / Test]
+Writing commands default to Dry-run and report the plan, logical publication key, and affected destination. No business writes occur without an explicit write flag. Production writes additionally require explicit production-environment and publishing values; no force option bypasses them. Share reusable option definitions. Document the exit codes in the table above. [Check / Test]
 
 ## Prove recovery through public behavior
 

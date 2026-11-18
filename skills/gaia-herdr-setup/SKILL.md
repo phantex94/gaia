@@ -11,7 +11,8 @@ Treat the repository's development principles as requirements. Adapt Herdr to th
 
 - Read applicable `AGENTS.md`, development principles, manifests, checks, and current diff. Locate the target feature. Preserve user changes.
 - Inspect installed versions, executable/plugin paths, local patches, configuration scopes, hooks, and active work. Avoid secrets and full environment dumps. Prefer file inspection; live board queries can perform housekeeping.
-- Read [compatibility.md](references/compatibility.md). The user's declared pair is Herdr host 0.9.5 plus herdr-projects plugin 1.0.1. Record host CLI/server and plugin checkout/launcher/keeper separately; do not ask the user to repeat these versions. Treat the pinned source as evidence, not proof of the local runtime. Probe actual help/schema before generating commands or settings. Mark unverified capabilities `unknown`; do not silently upgrade, downgrade, or substitute current upstream main.
+- Read [compatibility.md](references/compatibility.md). The user's declared pair is Herdr host 0.9.5 plus herdr-projects plugin 1.2.27. Record host CLI/server and plugin checkout/launcher/keeper separately; do not ask the user to repeat these versions. Treat the pinned source as evidence, not proof of the local runtime. Probe actual help/schema before generating commands or settings. Mark unverified capabilities `unknown`; do not silently upgrade, downgrade, or substitute current upstream main.
+- Inspect every rule scope: board global settings, user repo entries, coordinator scopes (`--main-coordinator`, `--machine-coordinator`, `--project-coordinator <repo>`), the repo file, repo `AGENTS.md`, and coordinator memory. A project rule found in a global scope is a leak to move, not a rule to copy. For folders registered by mistake, propose `archive --repo`, never deletion.
 - Classify each target feature separately as research, reusable, or production. Do not infer readiness from directory names or test-file existence.
 
 ## Resolve missing decisions
@@ -31,9 +32,9 @@ Treat the repository's development principles as requirements. Adapt Herdr to th
 
 - Follow [setup-contract.md](references/setup-contract.md). Map each change to a principle, exact path/setting, effective scope, rollback, and `Check`, `Test`, or `Review`.
 - Keep shared policy in the repository. Adapt Claude Code and Codex entry points without competing policy copies or overwriting upstream's `herdr-projects` skill and existing hooks.
-- Preserve PIT single availability stamping and future perturbation tests; separate DAGs from execution state; parse strictly once at boundaries; prohibit business defaults and zero-filled missing values; preserve a distinct business-refusal exit and default dry-run CLI behavior.
-- Preserve append-only run evidence, idempotent logical outputs, immutable As-Traded history, and state updates anchored to the confirmed previous snapshot.
-- Permit configuration/parameter hashes; prohibit hashes of raw or derived datasets, rows, partitions, or data embedded in configuration. Source commits and software integrity checks remain distinct from quant dataset hashing.
+- Preserve PIT single availability stamping and future perturbation tests; separate DAGs from execution state; parse strictly once at boundaries; prohibit business defaults and zero-filled missing values; allow stale inputs only within a declared bounded degradation; preserve a business-refusal exit code distinct from the usage-error code 2, child exit codes that reflect business state, and default dry-run CLI behavior.
+- Preserve append-only run evidence, idempotent logical outputs under readable logical publication keys, immutable As-Traded history, and state updates anchored to the confirmed previous snapshot.
+- Use no hashes in any form: no content hashes, checksums, fingerprints, hash manifests, hash-based keys, or hash-like names. Name configurations as readable `param_set@seq`; logical keys are readable business fields; a Git commit ID is recorded as a value, never used as a name. A third-party download that verifies its own integrity is outside this rule.
 - Require stage-appropriate evidence. A documentation repo needs documentation/skill validation, not invented quant tests. Missing required checks block readiness; never create pass-only test stubs.
 
 ## Apply within scope

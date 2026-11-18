@@ -14,7 +14,7 @@ Use this entry point first, then read only the references relevant to the curren
 3. Own knowledge in modules. Build deep capabilities that hide mechanisms while keeping business policy explicit.
 4. Share mathematical and state contracts across Batch, Backfill, and Step. Preserve sufficient state and immutable As-Traded history.
 5. Commit outputs and state consistently. Reconcile retries and remote effects; prevent duplicate rows, weights, and publications.
-6. Reproduce results from pinned inputs, code, configuration, model, and state. Follow the project's explicit dataset-hashing prohibition.
+6. Reproduce results from pinned inputs, code, configuration, model, and state. Identify them by readable names, revisions, and `param_set@seq`; use no hashes in any form.
 7. Deliver a small, meaningful end-to-end capability before expanding scale. Verify the final integrated revision.
 8. Give each agent a bounded capability, the relevant contracts, and observable acceptance criteria. Count coordination costs before delegating.
 

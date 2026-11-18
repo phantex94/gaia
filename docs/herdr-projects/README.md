@@ -1,14 +1,14 @@
 # 让 Herdr Projects 执行 Gaia 开发原则
 
-状态：源码分析、改造设计和 setup skill 已提供；Herdr 补丁、安装与运行时集成测试尚未实施。
+状态：源码分析、改造设计和 setup skill 已提供，基线为 Herdr 0.9.5 + herdr-projects 1.2.27。Herdr 补丁暂缓（人工决定），安装与运行时集成测试尚未实施。
 
 ## 1. 选择两层交付，保留一个原则来源
 
 采用“标准版 setup + 薄补丁版本”。先用 setup 识别项目状态、生成适用配置和检查入口；遇到标准版无法强制保证的约束，再选择本地补丁版本。两条路径共用同一个 setup，不维护两套合作协议。
 
-以 [量化开发与协作规范](../../dev-principles/quant-development-and-agent-collaboration.zh-CN.md) 和 [项目启动规范](../../dev-principles/new-project-skeleton-efficiency-and-delivery.zh-CN.md) 为约束来源。工具适配留在本目录，不把特定 Herdr 版本的字段写回通用规范。参数和配置允许 hash；原始及衍生数据集、行、分区禁止 hash。Git 源码标识、软件包完整性校验不属于量化数据集 hash。
+以 [量化开发与协作规范](../../dev-principles/quant-development-and-agent-collaboration.zh-CN.md) 和 [项目启动规范](../../dev-principles/new-project-skeleton-efficiency-and-delivery.zh-CN.md) 为约束来源。工具适配留在本目录，不把特定 Herdr 版本的字段写回通用规范。默认任何形式都不用哈希：配置以可读的 `param_set@seq` 命名，逻辑键由可读业务字段组成，Git 提交号只作记录值、不作名称。第三方软件下载自带的完整性校验不在此列。
 
-用户已明确环境为 **Herdr 宿主 0.9.5 + herdr-projects 插件 1.0.1**，两者分别记录，禁止混用版本号。插件源码基线为 `v1.0.1`，提交 `b4989c7423f6b48bf6e82736e7b749c285d2e65a`；宿主 `v0.9.5` 提交为 `2ecf19a92fc3a7fff75b6ce3655ef04f4625ec01`。插件 [manifest](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/herdr-plugin.toml) 声明最低宿主 0.9.3、平台 linux/macos，因此 0.9.5 满足声明的版本门槛；这不是本机集成测试通过的证明。安装时还需验证实际运行的 server、插件 launcher/keeper 及 harness 版本。不要重复询问已提供的版本，也不要因此升级或降级用户环境。
+用户环境为 **Herdr 宿主 0.9.5 + herdr-projects 插件 1.2.27**（2026-11-18 审计在本机 CLI、keeper、serve 与 board 进程上观测到），两者分别记录，禁止混用版本号。插件源码基线为标签 `v1.2.27`（提交号作为记录值：`4a351c7`）；宿主基线为标签 `v0.9.5`。插件 [manifest](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/herdr-plugin.toml) 声明最低宿主 0.9.3、平台 linux/macos，因此 0.9.5 满足声明的版本门槛；这不是本机集成测试通过的证明。安装时还需验证实际运行的 server、插件 launcher/keeper 及 harness 版本。不要重复询问已提供的版本，也不要因此升级或降级用户环境。
 
 原仓库 `eliasstravik/herdr-projects` 已重定向至 [eliasstravik/shepherdr](https://github.com/eliasstravik/shepherdr)。不要套用最新主干、旧版 PROJECT.md 或其他产品的版本体系。详细能力边界见 [版本对照](../../skills/gaia-herdr-setup/references/compatibility.md)。
 
@@ -22,22 +22,22 @@
 
 ## 2. 按源码落点修改，先修真实缺口
 
-下列链接均固定到上述提交。优先级表示建议实施顺序，不表示补丁已经完成。
+下列链接均固定到标签 `v1.2.27`，行号以该标签为准。优先级表示建议实施顺序，不表示补丁已经完成；按人工决定，全部补丁暂缓，期间靠下文约定执行。
 
 | 优先级 / 改动 | 源码观察 | 修改方案 | 验收 |
 |---|---|---|---|
-| P0：锁定本地运行版本 | [bin/run.sh](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/bin/run.sh) 按本地构建新鲜度、下载版和版本条件选择程序；改源码后可能改选下载版 | 增加严格本地模式；本地构建过期则拒绝启动并给出构建命令。新增构建身份输出，记录上游提交、补丁提交、状态格式、二进制路径。CLI、launcher、keeper 使用同一身份 | **Test** 改源不重建时拒绝；断网时不降级；keeper 重启后身份一致 |
-| P0：分离检查修复与评审返修 | [settings_list.rs](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/core/src/store/settings_list.rs) 与 [pipeline.rs](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/flow/src/finish/pipeline.rs) 共用 review.rounds；设 0 会连带停止自动检查返修 | 独立表示确定性检查修复预算、独立验证策略、业务拒绝。保留已授权范围内的有界修复；禁止多轮对抗辩论。不要通过设置 rounds=0 假装完成解耦 | **Test** 检查失败按预算修复；评审不自动循环；business refusal 独立终止，不当作基础设施失败重试 |
-| P0：验证最终提交，禁止检查偷偷改代码 | [pipeline.rs](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/flow/src/finish/pipeline.rs) 可在检查通过后将工作树改动提交为 Written by the check | 将有意代码生成移到显式步骤；验证步骤对最终代码只读，检测受版本控制文件和影响构建的新增文件；产物只写隔离输出目录。发生代码变化就使原证据失效并重新验证 | **Test** 一个返回 0 但修改源码的检查必须失败；独立生成后重新验证的提交才可通过 |
-| P1：原生按任务规模路由 | [coordinator/rules.rs](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/flow/src/coordinator/rules.rs) 默认建任务；直接做要求用户明确提出 | 增加最小执行模式选择：direct、delegate、persistent。direct 仍需项目 CWD、唯一写者与完成证据；不能直接在 coordinator 数据目录改项目。不要只追加一段与固定规则冲突的提示词 | **Test** 单文件修正不启动整套派工；独立多文件任务可并行；恢复型任务形成持久依赖；同 worktree 不出现双写 |
-| P1：依赖边携带交付契约 | [after.rs](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/flow/src/after.rs)、[after/pass.rs](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/flow/src/after/pass.rs) 基于 board 完成状态放行 | 保留无环检查，新增代码/报告/数据引用等依赖类型、对应版本和证据。在入队及真正启动时重新核验；报告型依赖无需强行 merge。旧 after 边标明 legacy，不能迁移后冒充严格契约 | **Test** 手动 done 但无要求的产物不能解锁；合法报告能解锁；代码或数据 vintage 变更使旧证据失效 |
-| P1：验证并收紧现有外部动作恢复 | 1.0.1 的 [pipeline.rs](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/flow/src/finish/pipeline.rs) 在创建 PR 未获得 URL 时，调用 [already.rs](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/flow/src/finish/already.rs) 按 head 分支接管已有 open PR；还识别已在 main、无改动和归档仓库 | 撤回“需要从零新增 PR 接管”的建议。先运行既有测试，再按需求补充崩溃恢复、head/base/任务身份核验，以及查找失败与不存在的区分；仅对测试暴露的缺口补丁 | **Test** 保留 tests/pull_requests_already.rs；注入“服务端成功、本地未记账”崩溃和错误 base 的同 head PR。未实测前不宣称恢复失效或完整幂等已得到保证 |
-| P2：提供真正独立的验证边界 | [review_brief.rs](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/flow/src/finish/review_brief.rs) 有 commit-pinned verdict，但评审口吻对抗；access 的 ask/full 不是只读权限模型 | 以最终代码、契约和命令为独立任务输入，限定写入隔离临时目录；用操作系统权限或隔离执行器保护源码与凭据。通过新鲜上下文做一次证据验证，必要修复回到有界检查流程 | **Test** 读得到目标产物、写不了受保护仓库/生产状态；PIT/幂等守卫的定向故障注入能被发现。**Review** 不把模型自述“只读”算权限证明 |
-| P2：跨 harness 预算与长期任务 | [automations.md](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/docs/automations.md) 已有调度、重叠与循环防护；令牌限制按回合边界检查 | 对实际需要的长任务新增 goal 的完成证据、workflow 依赖、loop 停止条件；统一 board 与 harness 内部 agent 预算。显式记录时区、漏跑与恢复策略 | **Test** 预算计入嵌套代理；达成目标或无进展后停止；重启不重复消费。不要假称这些设计名词是 v1.0.1 原生命令 |
+| P0：锁定本地运行版本 | [bin/run.sh](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/bin/run.sh) 按本地构建新鲜度、下载版和版本条件选择程序；改源码后可能改选下载版 | 增加严格本地模式；本地构建过期则拒绝启动并给出构建命令。新增构建身份输出，记录上游提交、补丁提交、状态格式、二进制路径。CLI、launcher、keeper 使用同一身份 | **Test** 改源不重建时拒绝；断网时不降级；keeper 重启后身份一致 |
+| P0：分离检查修复与评审返修 | [settings_list.rs](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/core/src/store/settings_list.rs) 中 review.rounds 同时限制检查返修（[pipeline.rs:120-121](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/flow/src/finish/pipeline.rs#L120-L121)）、research 退回（research.rs:26）、评审循环（pipeline_end.rs:93-95）和 worker.fallback 接手；设 0 会连带停止自动检查返修，即使 review.when=never。暂缓期间显式设为 3，有 check.command 后不得设 0 | 独立表示确定性检查修复预算、独立验证策略、业务拒绝。保留已授权范围内的有界修复；禁止多轮对抗辩论。不要通过设置 rounds=0 假装完成解耦 | **Test** 检查失败按预算修复；评审不自动循环；business refusal 独立终止，不当作基础设施失败重试 |
+| P0：验证最终提交，禁止检查偷偷改代码 | [pipeline.rs:140-143](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/flow/src/finish/pipeline.rs#L140-L143) 在检查通过后将工作树改动提交为 Written by the check；暂缓期间约定检查只读，写出的文件必须被 git 忽略 | 将有意代码生成移到显式步骤；验证步骤对最终代码只读，检测受版本控制文件和影响构建的新增文件；产物只写隔离输出目录。发生代码变化就使原证据失效并重新验证 | **Test** 一个返回 0 但修改源码的检查必须失败；独立生成后重新验证的提交才可通过 |
+| P1：原生按任务规模路由 | [coordinator/rules.rs:33](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/flow/src/coordinator/rules.rs#L33) 默认建任务；直接做要求用户明确提出 | 增加最小执行模式选择：direct、delegate、persistent。direct 仍需项目 CWD、唯一写者与完成证据；不能直接在 coordinator 数据目录改项目。不要只追加一段与固定规则冲突的提示词 | **Test** 单文件修正不启动整套派工；独立多文件任务可并行；恢复型任务形成持久依赖；同 worktree 不出现双写 |
+| P1：依赖边携带交付契约 | [after.rs](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/flow/src/after.rs)、[after/pass.rs](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/flow/src/after/pass.rs) 基于 board 完成状态放行（1.2.27 中可跨机器） | 保留无环检查，新增代码/报告/数据引用等依赖类型、对应版本和证据。在入队及真正启动时重新核验；报告型依赖无需强行 merge。旧 after 边标明 legacy，不能迁移后冒充严格契约 | **Test** 手动 done 但无要求的产物不能解锁；合法报告能解锁；代码或数据 vintage 变更使旧证据失效 |
+| P1：验证并收紧现有外部动作恢复 | 1.2.27 的 [pipeline.rs:201-215](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/flow/src/finish/pipeline.rs#L201-L215) 在创建 PR 未获得 URL 时，调用 [already.rs](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/flow/src/finish/already.rs) 按 head 分支接管已有 open PR，并以 `wrong_base` 拒绝 base 不符的 PR；还识别已在 main、无改动和归档仓库 | 不再提议新增 PR 接管或 base 核验。先运行既有测试，再按需求补充崩溃恢复、任务身份核验，以及查找失败与不存在的区分；仅对测试暴露的缺口补丁 | **Test** 保留 tests/pull_requests_already.rs；注入“服务端成功、本地未记账”崩溃，并确认错误 base 的同 head PR 被拒绝。未实测前不宣称恢复失效或完整幂等已得到保证 |
+| P2：提供真正独立的验证边界 | [review_brief.rs](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/flow/src/finish/review_brief.rs) 有 commit-pinned verdict，但评审口吻对抗；access 的 full/ask/auto 都不是只读权限模型 | 以最终代码、契约和命令为独立任务输入，限定写入隔离临时目录；用操作系统权限或隔离执行器保护源码与凭据。通过新鲜上下文做一次证据验证，必要修复回到有界检查流程 | **Test** 读得到目标产物、写不了受保护仓库/生产状态；PIT/幂等守卫的定向故障注入能被发现。**Review** 不把模型自述“只读”算权限证明 |
+| P2：跨 harness 预算与长期任务 | [automations.md](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/docs/automations.md) 已有调度、重叠与循环防护，漏跑超过五分钟即跳过；令牌限制按回合结束统计；1.2.27 中已有 coordinator 的 autopilot.goal 及其限额（相对 1.0.1 新增） | 对实际需要的长任务补充 goal 的完成证据、workflow 依赖、loop 停止条件；统一 board 与 harness 内部 agent 预算。显式记录时区、漏跑与恢复策略 | **Test** 预算计入嵌套代理；达成目标或无进展后停止；重启不重复消费。autopilot.goal 是原生设置，类型化 workflow 依赖与有界 loop 仍不是 1.2.27 原生命令 |
 
 不重做已有 completion hooks、锁、事件水位与循环保护；先对缺口做小补丁。源码当前已区分 hook/transcript、旧回合和阶段，不能把它描述成“屏幕空闲就算完成”。
 
-1.0.1 还增加 Claude helper 在回合中返回的识别，以及卡在 Finishing 时的恢复入口。保留 helpers.rs、actions/finish_stuck.rs 和 tests/finish_missed.rs 的行为；不要按 1.0.0 的行为提出重复补丁。首次方案的旧基线及本次修正保留在评估记录中。
+1.2.27 中仍有 agent helper（Codex 子 agent、Claude Code 后台 agent）回合结束的识别：helper 的回合结束不算 agent 的，helper 回来后再唤醒 agent（crates/core/src/agents/helpers.rs:1-4,27）；以及卡在 Finishing 时的恢复入口。保留 actions/finish_stuck.rs、tests/finish_missed.rs 和 tests/rearm_stuck.rs 的行为；不要按旧版本行为提出重复补丁。旧基线（1.0.0、1.0.1）及历次修正保留在评估记录中。
 
 ## 3. 让 setup 先调查，再问少量关键问题
 
@@ -56,7 +56,7 @@
 | 应用与恢复 | 在已授权范围内执行；保留自有修改收据，不覆盖用户新增内容 | **Test** 相同输入重跑不新增 hook/task/cron/worktree；中断后核对现状再续跑 |
 | 验收报告 | 说明实际改动、有效版本、检查结果、剩余缺口和生产状态 | **Review** 区分 skill 文本评估、运行时 smoke test 和量化验收 |
 
-任务级 → 用户仓库级 → 用户全局 → 仓库文件 → 默认值的优先级，意味着“写好了仓库配置”不等于“已经生效”。instructions 还会累加并受 none 重置影响。尤其 v1.0.1 的 review.rounds、review.when、merge.by、plan.approve 不支持放入仓库设置文件；用户配置里的“仓库条目”是另一作用域。setup 先检验字段能否放在该作用域，再检查生效结果。[查找优先级](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/core/src/store/settings/lookup.rs) 与 [字段定义](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/core/src/store/settings_list.rs) 分别决定这两件事。
+任务级 → 用户仓库级 → 用户全局 → 仓库文件 → 默认值的优先级，意味着“写好了仓库配置”不等于“已经生效”。instructions 还会累加并受 none 重置影响。1.2.27 的仓库文件只接受 research.only、chat.only、workspace.setup/include/teardown、check.command、check.again、check.timeout、merge.pushTimeout、repo.key，且从工作树起点提交读取；review.*、merge.by、merge.checks、plan.approve 不能放入。用户配置里的“仓库条目”是另一作用域。coordinator 设置另有顺序（本次 → 该 coordinator → 用户 → 默认），用 `set … --project-coordinator <repo>` 写入的 coordinator.instructions 只作用于该仓库的项目 coordinator，不作用于主对话。相对 1.0.1 新增的 worker/reviewer.fallback、review.mustFix、attempts.by/pick、autopilot.*、access auto、merge.checks/sync 同样先查作用域再生效。误注册的非仓库目录用 `archive --repo <name>` 归档（`restore --repo` 撤销，不删磁盘）。setup 先检验字段能否放在该作用域，再检查生效结果。[查找优先级](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/core/src/store/settings/lookup.rs) 与 [字段定义](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/core/src/store/settings_list.rs) 分别决定这两件事。
 
 ## 4. 根据功能状态定制，不按整仓库一刀切
 
@@ -71,13 +71,13 @@
 
 对于量化生产，保留三项核心幂等验收：同日连跑两次、崩溃恢复重跑、全量 Batch 对比分段 Batch + Step（含重跑）。日志只追加，逻辑视图去重；有状态算子只读确认的前一日快照并原子发布新状态。同实现、固定环境按承诺精确比对；不同数值算法允许经论证的容差，并单独核验下游决策。
 
-**落实：Test** 检查以上可观察行为；**Check** 用源、不可变 revision/vintage、截点及 schema 引用数据，不计算数据 hash。引用元数据不等于字节完整性证明；重现性还依赖存储不可变和写入权限控制。
+**落实：Test** 检查以上可观察行为；**Check** 用源、不可变 revision/vintage、截点及 schema 引用数据，不计算任何哈希。引用元数据不等于字节完整性证明；重现性还依赖存储不可变和写入权限控制。
 
 ## 5. Claude Code 与 Codex 共用约束，保留各自执行适配
 
 将业务规则和验收放在仓库；保持 AGENTS 为共享入口，并在支持的 Claude 入口引用相同规则。避免两套全文副本漂移。worker/reviewer 使用哪个 harness 是可调整的执行选择，不把“Claude 写、Codex 审”当成质量证明。
 
-保留上游适配器：Claude hook 与用户 hook 共存；Codex 已有 notify 时可能依靠 transcript fallback。不要另装一套抢占完成事件的 hook。将流程完成归属留在一个地方。[adapter 源码](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/crates/core/src/agents/adapter.rs)。
+保留上游适配器：Claude hook 与用户 hook 共存；Codex 已有 notify 时可能依靠 transcript fallback。不要另装一套抢占完成事件的 hook。将流程完成归属留在一个地方。[adapter 源码](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/crates/core/src/agents/adapter.rs)。
 
 区分宿主与插件：Herdr [0.9.5 发布说明](https://github.com/herdrdev/herdr/releases/tag/v0.9.5) 表明宿主不再安装 Codex turn hooks，宿主 Codex 状态恢复采用屏幕检测；Projects 自己的 notify/transcript 完成逻辑仍然存在。不要因为宿主采用屏幕检测，就把 Projects 的完成判定也简化为屏幕空闲；也不要自动删除 Projects 或用户拥有的 hook。宿主 integration 更新属于另一个有写入效果的操作，setup 先检查所有权与实际配置。
 
@@ -85,22 +85,22 @@
 
 ## 6. 本地优化版本的安装与回退
 
-先取得实际 fork 地址或本地 checkout，不假设已经存在 Gaia Herdr fork。以固定上游提交创建补丁分支；对每个补丁保留独立提交与验收。构建前按实际源码检查工具链与测试入口，构建用 `cargo build --release --locked`。这是一条构建建议，不表示本次已经执行。
+先取得实际 fork 地址或本地 checkout，不假设已经存在 Gaia Herdr fork。以固定上游提交创建补丁分支；对每个补丁保留独立提交与验收。构建前按实际源码检查工具链与测试入口，构建用 `cargo build --release --locked`。这是一条构建建议，不表示本次已经执行；补丁本身按人工决定暂缓。
 
 按以下顺序实施：
 
-1. **Check** 固定 upstream 与 patch commit，记录状态格式和运行依赖；禁止把当前主干当成 v1.0.1。
+1. **Check** 固定 upstream 标签与补丁分支，提交号只作记录值；记录状态格式和运行依赖；禁止把当前主干当成 v1.2.27。
 2. **Test** 在隔离目录构建并运行补丁验收；隔离仓库、HERDR_PROJECTS_HOME、harness 配置和 Herdr server/socket。只隔离 state home 不足以隔离 install 的全部影响。
 3. **Test** 以严格本地 launcher 运行，验证 CLI/keeper/launcher 身份及崩溃恢复；未实现严格选择时不宣称本地补丁版稳定生效。
 4. **Check** 按安装版本支持的本地 link/install 流程切换，先停止旧工作者并备份状态。上游文档使用 `herdr plugin link "$PWD"`、`sh bin/run.sh install`；必须确认它们的作用范围后执行。不要在同一 server 并行注册两个冲突插件。
 5. **Test** 先在一次性仓库做真实 smoke test，再接入目标仓库；setup 不自动开启生产发布和 cron。
 6. **Check** 回退时验证旧二进制能读的状态格式；迁移不可逆时保留新事件、导出或协调后恢复备份，禁止直接用旧二进制读取新格式。
 
-标准版路线可按 [安装文档](https://github.com/eliasstravik/shepherdr/blob/b4989c7423f6b48bf6e82736e7b749c285d2e65a/docs/install.md) 核对固定 ref 的安装。两条路线都要再次确认正在运行的程序，不能以“源码已经改了”作为生效证据。
+标准版路线可按 [安装文档](https://github.com/eliasstravik/shepherdr/blob/v1.2.27/docs/install.md) 核对固定 ref（`--ref v1.2.27`）的安装。两条路线都要再次确认正在运行的程序，不能以“源码已经改了”作为生效证据。
 
 ## 7. 首批实施范围与成功标准
 
-先用 setup 对 Gaia 做方案级演练，再对一个真实功能做隔离试用。首批源码补丁只做 P0：版本锁定、修复/评审预算分离、最终提交验证。随后用一个跨任务依赖案例决定 P1 的必要范围；P2 等真实长任务出现再做。
+先用 setup 对 Gaia 做方案级演练，再对一个真实功能做隔离试用。首批源码补丁只做 P0：版本锁定、修复/评审预算分离、最终提交验证；按人工决定，这些补丁目前暂缓。随后用一个跨任务依赖案例决定 P1 的必要范围；P2 等真实长任务出现再做。
 
 - **Check** setup 输出能逐条追溯到原则、版本和作用域。
 - **Test** setup 两次运行及中断恢复不重复产生副作用。
