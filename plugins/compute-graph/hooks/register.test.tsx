@@ -1,3 +1,4 @@
+import type { CommandRunInput } from 'claude-code'
 import { expect, test } from 'claude-code/testing'
 
 const PANE = {
@@ -56,6 +57,10 @@ const NO_SLICE = {
   notes: ['AMC-56: no graph slice (no intent file in docs/intent).'],
 }
 
+function graph(args: string): CommandRunInput {
+  return { command: 'graph', args } as CommandRunInput
+}
+
 function engine(on: any, shown: object, seen: string[][]) {
   on('command.register', () => ({ value: { command: 'graph' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
@@ -70,8 +75,8 @@ test('the pane marks the slice: add, rewire, polish, removed edge, missing id', 
   const seen: string[][] = []
   engine(on, SLICED, seen)
   await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
-  await $.command.run({ command: 'graph', args: 'sample' })
-  expect(seen[0]?.join(' ')).toContain('--task smp-1')
+  await $.command.run(graph('sample'))
+  expect(seen[0]?.slice(-2)).toEqual(['json', 'sample'])
 
   for (const surface of ['terminal', 'desktop'] as const) {
     const ui = await $.ui.mount({ ...PANE, surface })
@@ -88,7 +93,7 @@ test('the pane marks the slice: add, rewire, polish, removed edge, missing id', 
 test('a task without an intent file shows the repo graph and says it has no slice', async ($, on) => {
   engine(on, NO_SLICE, [])
   await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
-  const { text } = (await $.command.run({ command: 'graph', args: 'AMC-56' })) as { text: string }
+  const { text } = (await $.command.run(graph('AMC-56'))) as { text: string }
   expect(text).toContain('no graph slice')
 
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })

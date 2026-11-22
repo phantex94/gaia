@@ -8,7 +8,7 @@ description: Publish one private, phone-friendly page (artifact) per task showin
 The page is rendering only: it draws `graph.yaml` and the task intent's `graph_slice` as committed, and says so when there is no slice. Never add, guess or edit nodes, edges or slices for the page.
 
 ## Steps
-1. **Target**: the argument as given: a board id (`AMC-56`), a repo folder plus `--task <name>`, or `sample` (this plugin's sample, `<plugin root>/sample --task smp-1`). No argument: the current folder.
+1. **Target**: the argument as given: a board id (`AMC-56`), a repo folder plus `--task <name>`, or `sample` (this plugin's sample repo, task `smp-1`). No argument: the current folder.
 2. **Generate** (the plugin root is two folders above this skill's base directory):
    `uv run -q --script <plugin root>/scripts/compute_graph.py html <target> -o "$TMPDIR/graph-<task or repo>.html"`
    (no `uv`: `python3` with PyYAML runs the same script). Exit 2 means the target did not resolve: show the message and stop.

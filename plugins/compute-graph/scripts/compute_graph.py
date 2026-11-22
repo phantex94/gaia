@@ -32,6 +32,8 @@ DEFAULT_INTENT_FOLDER = "docs/intent"
 GRAPH_FILE = "graph.yaml"
 BOARD_DATA = Path(os.environ.get("HERDR_PROJECTS_DATA", Path.home() / ".herdr-projects" / "data"))
 BOARD_ID = re.compile(r"^([A-Za-z][A-Za-z0-9_-]*?)[-/](\d+)$")
+SAMPLE = Path(__file__).resolve().parent.parent / "sample"
+SAMPLE_TASK = "smp-1"
 HOOK_INTENT_FOLDER = re.compile(r"Intent folder:\s*`([^`<>]+)`")
 
 NO_GRAPH = "This repo has no {path} yet. Bootstrap it: /qstack:how prints a draft, and the bootstrap task commits it."
@@ -124,6 +126,8 @@ def worktree_task(path):
 
 def resolve(target, task_name=""):
     """Turn a board id or a repo path into (source, repo, task name, board label)."""
+    if target == "sample":
+        target, task_name = str(SAMPLE), task_name or SAMPLE_TASK
     target = target or os.getcwd()
     path = Path(target).expanduser()
     if path.is_dir():
@@ -486,7 +490,7 @@ def render_html(view):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["json", "check", "html"])
-    parser.add_argument("target", nargs="?", default="", help="board id (AMC-56) or repo folder; default: cwd")
+    parser.add_argument("target", nargs="?", default="", help="board id (AMC-56), repo folder or sample; default: cwd")
     parser.add_argument("--task", default="", help="task name for a repo folder, e.g. smp-1")
     parser.add_argument("-o", "--out", default="", help="html: output file (default: stdout)")
     args = parser.parse_args(argv)

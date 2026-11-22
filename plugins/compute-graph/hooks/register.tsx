@@ -25,8 +25,7 @@ let cwd = ''
 
 function argv(root: string, picked: string): string[] {
   const words = picked.split(/\s+/).filter(Boolean)
-  const args = words[0] === 'sample' ? [`${root}/sample`, '--task', 'smp-1'] : words
-  return [`${root}/scripts/compute_graph.py`, 'json', ...(args.length ? args : [cwd])]
+  return [`${root}/scripts/compute_graph.py`, 'json', ...(words.length ? words : [cwd])]
 }
 
 async function fetchView($: EngineInterface, picked: string): Promise<View> {
