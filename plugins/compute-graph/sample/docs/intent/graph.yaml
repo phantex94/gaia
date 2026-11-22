@@ -1,0 +1,74 @@
+# Compute graph of the sample CTA repo (schema: qstack templates/graph.yaml)
+graph: 1
+repo: sample-cta
+updated_by: smp-1-carry-factor
+nodes:
+  - id: pit_bars
+    stage: data
+    axis: ts
+    inputs: [raw_bars]
+    outputs: [bar_panel]
+    code: "src/data/bars.py:build_panel"
+  - id: roll_calendar
+    stage: data
+    axis: ts
+    inputs: [contract_specs]
+    outputs: [roll_schedule]
+  - id: momentum
+    stage: factor
+    axis: ts
+    inputs: [bar_panel]
+    outputs: [momentum_score]
+  - id: carry_factor
+    stage: factor
+    axis: ts
+    inputs: [bar_panel, roll_schedule]
+    outputs: [carry_score]
+    code: "src/factor/carry.py:carry"
+    note: "front-to-next annualised roll yield"
+  - id: alpha_blend
+    stage: model
+    axis: cs
+    group_by: trading_day
+    inputs: [carry_score]
+    outputs: [alpha]
+  - id: target_weights
+    stage: portfolio
+    axis: cs
+    group_by: trading_day
+    inputs: [alpha]
+    outputs: [weights]
+  - id: order_router
+    stage: execution
+    axis: ts
+    inputs: [weights]
+    outputs: [fills]
+  - id: pnl_ledger
+    stage: sim
+    axis: ts
+    inputs: [fills]
+    outputs: [equity_curve]
+  - id: risk_report
+    stage: sim
+    axis: cs
+    group_by: trading_day
+    inputs: [weights, equity_curve, momentum_score]
+    outputs: [risk_summary]
+edges:
+  - { from: pit_bars, to: momentum, carries: bar_panel }
+  - { from: pit_bars, to: carry_factor, carries: bar_panel }
+  - { from: roll_calendar, to: carry_factor, carries: roll_schedule }
+  - { from: carry_factor, to: alpha_blend, carries: carry_score }
+  - { from: alpha_blend, to: target_weights, carries: alpha }
+  - { from: target_weights, to: order_router, carries: weights }
+  - { from: order_router, to: pnl_ledger, carries: fills }
+  - { from: target_weights, to: risk_report, carries: weights }
+  - { from: pnl_ledger, to: risk_report, carries: equity_curve }
+  - { from: momentum, to: risk_report, carries: momentum_score }
+clis:
+  - command: "cta signal build"
+    path: [pit_bars, carry_factor, alpha_blend]
+  - command: "cta run daily"
+    path: [pit_bars, carry_factor, alpha_blend, target_weights, order_router, pnl_ledger]
+  - command: "cta risk report"
+    path: [target_weights, risk_report]

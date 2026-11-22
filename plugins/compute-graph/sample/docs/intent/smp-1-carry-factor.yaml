@@ -1,0 +1,43 @@
+# Sample intent: replace momentum with carry as the alpha input
+task: smp-1-carry-factor
+status: building
+confirmed:
+  by: "sample"
+  on: "2026-11-22"
+  via: "qstack:why"
+supersedes: ""
+sources:
+  - "docs/intent/graph.yaml"
+
+meta:
+  mode: brownfield_add
+  maturity: L1
+  target_mount: "factor:@carry"
+  reference_sibling: "src/factor/momentum.py"
+
+objections: []
+decisions: []
+
+roadmap:
+  task_shape: "graph sub-path delivery"
+  phases:
+    - id: P0
+      deliverable: "carry_factor node and alpha_blend rewiring -> Gate 1B"
+      acceptance: "plan approved"
+      status: done
+      evidence: "sample"
+
+graph_slice:
+  nodes:
+    - { id: carry_factor, mode: add }
+    - { id: alpha_blend, mode: rewire }
+    - { id: pit_bars, mode: polish }
+  edges:
+    - { from: pit_bars, to: carry_factor, mode: add }
+    - { from: roll_calendar, to: carry_factor, mode: add }
+    - { from: carry_factor, to: alpha_blend, mode: add }
+    - { from: momentum, to: alpha_blend, mode: remove }
+    - { from: momentum, to: risk_report, mode: rewire }
+  clis:
+    - { command: "cta signal build", mode: rewire }
+    - { command: "cta run daily", mode: rewire }

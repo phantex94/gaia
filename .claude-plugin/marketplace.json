@@ -11,6 +11,11 @@
       "name": "qstack",
       "source": "./plugins/qstack",
       "description": "Disciplined human-agent co-development stack for quant systems: /qstack:why strict Round 1-2 intake & roadmap, /qstack:architect Round 3 data-model & compute-graph skeleton, /qstack:verify PIT/Batch=Step/Embargo verification, and /qstack:perf readability-preserving optimization."
+    },
+    {
+      "name": "compute-graph",
+      "source": "./plugins/compute-graph",
+      "description": "Compute-graph view: a pane beside the chat (/graph AMC-56) and a private page per task (/compute-graph:graph-page) drawing a repo's docs/intent/graph.yaml with the task's graph_slice highlighted."
     }
   ]
 }
