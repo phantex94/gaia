@@ -17,7 +17,8 @@ description: Strictly read-only subsystem walkthrough & existing-layout mapper (
    - What is the current Layout and routing?
    - For the proposed task, does it **① Add to graph**, **② Rewire routing**, or **③ Polish node internals without changing routing**?
    - Which existing nodes can be reused and which invariants (PIT, `Batch == Step`, schema, units) sit in the blast radius?
+4. **Graph file**: if the repo has a `<intent folder>/graph.yaml` (`../../templates/graph.yaml`; folder from the Hook, default `docs/intent/`), state the baseline in its node ids and flag every place where the code and the file disagree. If it has none, **print a complete `graph.yaml` draft** in the baseline (nodes with stage, `ts`/`cs` axis, I/O; explicit edges; CLI <-> sub-path), each node traced to the code that implements it. Do not write it: the task that bootstraps the graph commits it.
 
 ## Exit & Handoff
-- Feed directly into `/qstack:why` (to pre-fill the intent YAML) and `/qstack:architect` (Round 3 Brownfield delta-on-layout review).
+- Feed directly into `/qstack:why` (to pre-fill the intent YAML) and `/qstack:architect` (Round 3 Brownfield delta-on-layout review and `graph_slice`).
 - **Harness rule**: Direct for focused scopes; 1 read-only `subagent` if scanning a large multi-package repo.

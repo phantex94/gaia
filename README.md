@@ -1,8 +1,9 @@
 # gaia — Quant Development Knowledge & `qstack` Plugin
 
-This repository manages **`qstack` (`v0.3.0`)**, a `pstack`-inspired, strict 3-Round Claude Code plugin and cross-harness skill stack for human-agent quantitative framework and strategy development.
+This repository manages **`qstack` (`v0.4.0`)**, a `pstack`-inspired, strict 3-Round Claude Code plugin and cross-harness skill stack for human-agent quantitative framework and strategy development.
 
 - Active plugin source: [`plugins/qstack/`](plugins/qstack/)
+- Compute-graph view plugin: [`plugins/compute-graph/`](plugins/compute-graph/) (pane `/graph AMC-56`, page `/compute-graph:graph-page`)
 - Marketplace manifest: [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json)
 - Legacy v1 monolithic guide: [`dev-principles/`](dev-principles/) (kept intact for history)
 
@@ -17,6 +18,7 @@ This repository manages **`qstack` (`v0.3.0`)**, a `pstack`-inspired, strict 3-R
 3. **Round 3 — `/qstack:architect` (Skeleton First, ZERO Business Logic, Gate 1B)**: the builder's plan.
    - **Greenfield**: Layout mapping core CLIs to graph sub-paths + exact typed stub files, written right after approval.
    - **Brownfield**: existing Layout (or a delta on the repo's design sources) annotated **① Add / ② Rewire / ③ Polish**.
+   - **Graph slice**: the intent's `graph_slice` names the nodes, edges and CLIs the task touches in the repo's `docs/intent/graph.yaml` (`templates/graph.yaml`, bootstrapped from `/qstack:how`'s draft); Add and Rewire tasks update `graph.yaml` in their own PR.
    - **Ops**: production/authority-boundary requests and read-only audits of production systems or shared hosts go to `skills/mode/playbooks/ops-change.md` (runbook + rehearsal at Gate 1B, separate go/no-go before the production step).
    - Then sub-path delivery with `/qstack:verify` (Gate 2) and optional `/qstack:perf` (Gate 3).
 
@@ -46,6 +48,7 @@ claude plugin install qstack@qstack
 # Or via GitHub once pushed
 claude plugin marketplace add phantex94/gaia
 claude plugin install qstack@qstack
+claude plugin install compute-graph@qstack   # optional: the compute-graph pane and page
 
 # Helper script (also supports .agents/skills/)
 bash scripts/install-qstack.sh [claude|agents]

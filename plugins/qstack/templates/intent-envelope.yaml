@@ -1,6 +1,6 @@
 # Intent Envelope (shared by every intent template; field names are fixed)
 # File: <intent folder>/<task>.yaml (default docs/intent/), committed by the builder after Gate 1B.
-# Layout: these envelope fields first, then the matching body template, then roadmap.
+# Layout: these envelope fields first, then the matching body template, then roadmap, then graph_slice.
 
 task: "<board key + slug, e.g. abc-12-short-name | without a board: yyyy-mm-dd-short-name>"
 status: confirmed                  # unconfirmed | confirmed | building | delivered | superseded
@@ -37,3 +37,11 @@ roadmap:                           # Outcome-level at Gate 1; refined into CLI <
       acceptance: "<hand-calc oracle + future perturbation + Batch == Step on synthetic data>"
       status: todo
       evidence: ""
+
+graph_slice:                       # Round 3 (Gate 1B), graph tasks only: what this task changes in <intent folder>/graph.yaml
+  nodes:                           # Ids as in graph.yaml after this task's PR
+    - { id: "<node id>", mode: add }                  # add | rewire | polish
+  edges:
+    - { from: "<node id>", to: "<node id>", mode: add }   # add | rewire | remove (a removed edge is gone from graph.yaml)
+  clis:
+    - { command: "<cli command>", mode: rewire }       # add | rewire | polish | remove

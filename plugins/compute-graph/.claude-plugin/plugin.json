@@ -1,0 +1,9 @@
+{
+  "name": "compute-graph",
+  "version": "0.1.0",
+  "description": "Compute-graph view: a pane beside the chat and a private page per task, drawing a repo's docs/intent/graph.yaml with one task's graph_slice highlighted.",
+  "author": {
+    "name": "Quant Development Team"
+  },
+  "types": "./types/index.d.ts"
+}
