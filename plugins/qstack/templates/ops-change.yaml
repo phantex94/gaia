@@ -1,0 +1,111 @@
+# Ops Change / Production Audit Intent (Template O, saved as docs/intent/<task>.yaml)
+# Envelope fields are shared with every qstack intent; only the `ops:` block is ops-specific.
+# Slots C1-C7 and A/I/U/Q/M/D/H: references/02 section 5. Playbook: skills/mode/playbooks/ops-change.md.
+# Fill boundary facts from measurement on the host; drop blocks marked for another variant or class.
+
+task: "<board key + slug, e.g. abc-12-move-input-root>"
+status: unconfirmed                # unconfirmed | confirmed | building | delivered
+confirmed:
+  by: "<human>"
+  on: "<YYYY-MM-DD>"
+  via: "<interview | board message | plan approval>"
+sources:                           # what was read or measured, and where
+  - "<e.g. scheduler listing on the production host, traced reads of job X, Hook ops block>"
+
+scope: "<one sentence: what this operation does>"
+non_goals:
+  - "<e.g. no reusable tool; one-off action on the listed paths only>"
+
+ops:
+  variant: "<audit | incident | release_cutover | live_change>"
+  class: []                        # any of: data_move, path_move, config, deletion, scheduled_job, upstream, quota, shared_host
+
+  boundary:                        # C1, measured after the task starts
+    jobs:
+      - name: "<job>"
+        schedule_source: "<scheduler entry it was read from, or none>"
+        reads_traced: ["<paths seen in a trace or run record>"]
+        writes: ["<paths or external sinks>"]
+    target: "<live | copy>"
+    target_path: "<path that proves which one>"
+    facts_checked_against: "<live source each brief fact was checked against>"
+
+  authority:                       # C2
+    approver: "<who approves>"
+    executor_per_step: {}          # step name -> who runs it
+    stop_rule: "<what halts on stop, and what may continue>"
+    privileged_steps_before_dispatch: []   # sudo, another owner, credentials: who does them, when
+
+  windows:                         # C3
+    required: []
+    forbidden: []
+    latest_safe_time: "<time>"
+    on_overrun: "<stop and report | finish step and stop | ...>"
+
+  undo:                            # C4, not for audit
+    not_undoable: []               # served outputs, consumer effects, deletions
+    rollbacks_ended: []            # existing rollback paths this operation removes
+    trigger: "<failed check that triggers undo>"
+    command: "<undo or forward-fix command>"
+    executor: "<who runs it>"
+    rehearsed_on: "<copy root and date, or why no rehearsal is possible>"
+
+  blast_radius:                    # C5, not for audit
+    downstream: []                 # jobs, consumers, repos
+    coverage_change_approver: "<who, if coverage shrinks>"
+    concurrent_changes: []         # other changes to the same target or host, and their order
+
+  steps:                           # C6, not for audit
+    - command: "<command>"
+      half_done_state: "<state if it fails partway or is killed>"
+      rerun_rule: "<safe to rerun? what to check first>"
+
+  evidence:                        # C7
+    before_inventory: "<where the before-state is recorded>"
+    checks:
+      - name: "<check>"
+        runnable_now: true         # false -> add a deferred verify-at-time roadmap item
+        owner: "<who runs it>"
+        at: "<when>"
+    alert_test: "<test alert sent to the Hook's channel and received by whom>"
+
+  audit:                           # A, audit only
+    read_only_red_line: "no write, move, delete, restart or schedule edit"
+    real_sources: []               # scheduler, process table, traced reads, files on disk
+    scan_budget: {time: "<minutes>", io: "<e.g. lowest IO priority, roots and depth>"}
+    on_budget_exceeded: "<report partial result | narrow roots>"
+    out_of_scope_risks: []         # reported, not fixed
+
+  conditional:                     # keep only the blocks whose class applies
+    incident: {symptom_start: "", blamed_event: "", first_bad_input: "", normal_noise: [], contained_under_standing_authority: []}
+    upstream: {producer: "", schedule: "", rerun_by: "", no_data_reported_as: "", gap: "<refillable | permanent>", past_outputs_affected: []}
+    quota: {calls_per_endpoint_and_date: {}, waiver: "", other_tenants: []}
+    move: {read_by_live_job: [], production_location_rule: "", write_guard_on_new_root: ""}
+    deletion: {references_checked: [], reversible_form: "", guard_dry_run_on_active_case: ""}
+    shared_host: {shared_resources: [], touched_by_old_new_rolled_back: {}, holds_if_switch_fails_halfway: ""}
+
+objections:                        # each closed by the human
+  - id: O1
+    issue: "<open question or hazard>"
+    resolution: "<answer | non_goal>"
+    text: "<the human's answer>"
+
+decisions: []                      # later human answers, dated
+
+roadmap:                           # audit: scan + report only
+  - deliverable: "Measured inventory and runbook in the plan"
+    acceptance: "Board plan gate approves runbook and rehearsal plan"
+    status: todo                   # todo | done | deferred
+    evidence: ""
+  - deliverable: "Rehearsal on a copy (forward and undo)"
+    acceptance: "Pass criteria of the rehearsal plan met"
+    status: todo
+    evidence: ""
+  - deliverable: "Go/no-go: human releases the production step"
+    acceptance: "Permission answer recorded under decisions"
+    status: todo
+    evidence: ""
+  - deliverable: "Production step executed and verified"
+    acceptance: "C7 checks pass; deferred checks have owner and time"
+    status: todo
+    evidence: ""
