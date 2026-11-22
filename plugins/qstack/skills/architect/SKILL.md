@@ -47,4 +47,5 @@ The first deliverable always models **data structures** and **routing across the
 
 4. **Emit Execution DAG & Native Harness Plan (`Minimal-Harness-Cost`)**:
    - Refine the intent file's `roadmap` phases into `CLI <-> Sub-path` (graph tasks) or node contracts (single-node tasks).
+   - **Fill `graph_slice`** (graph tasks; `../../templates/intent-envelope.yaml`): every node, edge and CLI the Layout delta touches, by its id in `<intent folder>/graph.yaml` (`../../templates/graph.yaml`), with mode `add | rewire | polish` (edges and CLIs also `remove`). Add and Rewire tasks list the `graph.yaml` change in the plan and commit it in the same PR; Polish leaves `graph.yaml` unchanged. A repo without `graph.yaml` gets it from `/qstack:how`'s draft first, as its own task or an approved first step.
    - Outline the post-review build DAG (sub-path by sub-path: Math-First Reference -> synthetic verification -> real data) and recommend the minimal Harness mode (`Direct` vs `dynamic workflow` for parallel horizontal nodes/verification vs `swarm` for approved multi-package concurrent work).

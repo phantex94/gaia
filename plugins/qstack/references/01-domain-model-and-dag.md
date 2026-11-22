@@ -28,3 +28,8 @@ Keep four graphs strictly separate:
    - *Intra-stage loop*: Refine a factor formula or model hyperparameters by creating a new runtime YAML/code version and running a fresh acyclic DAG.
    - *Cross-stage loop*: Simulation/attribution diagnoses turnover, slippage, or risk leaks -> opens a new scoped task (`N0`) feeding back into earlier stages.
 4. **Delivery Task DAG** (strictly acyclic): Per-task design, Backbone, Reference, verification, and optimization steps with explicit Gates.
+
+## 4. Graph File & Task Slice (what a viewer draws)
+- **`<intent folder>/graph.yaml`** (`templates/graph.yaml`) records the repo's computational DAG: nodes (id, stage, `ts`/`cs` axis with grouping key, I/O objects), explicit edges, and CLI <-> sub-path. Stages map the six-stage chain: `data | factor | model | portfolio | execution | sim` (`model` = Alpha Combine/Model, `sim` = Simulation/Attribution/Risk).
+- **`graph_slice`** in the task's intent file (`templates/intent-envelope.yaml`) lists the node, edge and CLI ids the task touches, each with its mode: ① Add -> `add`, ② Rewire -> `rewire`, ③ Polish -> `polish`; an edge or CLI the task deletes is `remove`.
+- Both are committed records, never inferred from code: `/qstack:how` prints the bootstrap draft, and an Add or Rewire task updates `graph.yaml` in its own PR. A task with no intent file or no `graph_slice` has no slice.

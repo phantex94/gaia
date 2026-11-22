@@ -1,0 +1,22 @@
+# Compute Graph (one per repo): <intent folder>/graph.yaml (default docs/intent/graph.yaml)
+# Bootstrapped once from /qstack:how's printed draft by the task that commits it; afterwards
+# every Add or Rewire task updates it in its own PR. Edges are explicit, never derived from I/O names.
+# A viewer (gaia plugin compute-graph) draws it with one task's graph_slice highlighted.
+
+graph: 1                             # schema version, readable integer
+repo: "<repo name>"
+updated_by: "<intent file name of the last task that changed this file>"
+nodes:
+  - id: "<snake_case node id, unique in the repo, e.g. pit_bars>"
+    stage: data                      # data | factor | model (signal/model) | portfolio | execution | sim (sim/attribution/risk)
+    axis: ts                         # ts (per-instrument, time-series) | cs (cross-sectional)
+    group_by: ""                     # cs only: grouping key, e.g. trading_day
+    inputs: ["<data object consumed, e.g. raw_bars>"]
+    outputs: ["<data object produced, e.g. bar_panel>"]
+    code: "<optional: path:function>"
+    note: ""                         # optional, one line
+edges:
+  - { from: "<node id>", to: "<node id>", carries: "<data object>" }
+clis:
+  - command: "<tool domain action, e.g. cta signal build>"
+    path: ["<node id>", "<node id>"] # ordered sub-path; each step is an edge above
