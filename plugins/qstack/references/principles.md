@@ -14,3 +14,5 @@ Do not invoke this file directly as a command. Cite these named principles expli
 10. **`Reference-First-Optimize-Second`** — Write a clear, auditable Reference implementation first. Profile at target scale before optimizing. If budgets hold, stop. Any optimization that degrades readability requires explicit human approval of the speedup-vs-readability trade-off and must pass dual equivalence against Reference.
 11. **`Fail-Closed-Refusal`** — Missing required inputs, stale data, missing specs, infeasible optimization, and same-key lineage conflicts raise a dedicated `Refusal` (never swallowed by `except Exception`). Preserve `NaN / null`; never silently fill zero or sentinels.
 12. **`Minimal-Harness-Cost`** — Count decomposition, handoff, merge, and verification overhead. Default to Direct execution; use `subagent` for isolated heavy reads, `dynamic workflow` for deterministic fan-out/pipelines, `swarm` only after shared interfaces are frozen, and bounded `goal` only for machine-verifiable long loops.
+
+Style preferences (recommended, not mandatory; repo rules win): `style-preferences.md`.
