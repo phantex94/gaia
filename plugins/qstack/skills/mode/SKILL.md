@@ -19,7 +19,7 @@ You are operating in **qstack mode**. Enforce strict upfront intent alignment, c
    - **Brownfield**: Present existing Layout + annotate **Add to graph / Rewire routing / Polish without changing routing**.
    - **STOP at Gate 1B** for human review of Layout, routing, and stubs.
 3. **Sub-Path-by-Sub-Path Delivery & Verification**:
-   - Load ONLY the single matching playbook in `./playbooks/` (`greenfield.md`, `add-component.md`, `fix-and-parity.md`, `evolve-boundary.md`, `explore-alpha.md`, `optimize-perf.md`, `ship-and-feed.md`).
+   - Load ONLY the single matching playbook in `./playbooks/` (`greenfield.md`, `add-component.md`, `fix-and-parity.md`, `evolve-boundary.md`, `explore-alpha.md`, `optimize-perf.md`, `ship-and-feed.md`, `ops-change.md` for an audit, incident, release/cutover or live change on production).
    - Select minimum-cost native Harness (`../../references/06-collaboration-and-hook.md`): Direct for interactive/tight tasks, `subagent` for isolated heavy reads, `dynamic workflow` for deterministic fan-out/parallel verification, `swarm` only after Round 3 stubs freeze & human approves, bounded `goal` only for machine-verifiable long parity/perf loops.
    - For each Phase/sub-path in `.qstack/roadmap.md`:
      1. Fill Math-First Reference logic (no premature optimization);
