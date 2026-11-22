@@ -1,4 +1,5 @@
 # Brownfield Polish / Fix / Optimize Card (Template C — Mode ③: Polish Internals, Zero Routing Change)
+# Body only: wrap it in templates/intent-envelope.yaml (task, status, confirmed, sources, objections, decisions, roadmap).
 # Workflow: Agent inspects current implementation, callers, and existing tests first,
 #           pre-fills baseline behavior and blast radius, and returns this YAML for sign-off.
 
@@ -21,5 +22,3 @@ optimization_tradeoff:             # Required only for performance optimization 
 verification:
   repro_case: "<minimal failing test or pinned baseline snapshot>"
   equivalence_check: "<numeric tolerance + discrete ranking/threshold/position parity>"
-
-open_questions_and_pushback: []

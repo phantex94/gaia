@@ -19,5 +19,5 @@ description: Strictly read-only subsystem walkthrough & existing-layout mapper (
    - Which existing nodes can be reused and which invariants (PIT, `Batch == Step`, schema, units) sit in the blast radius?
 
 ## Exit & Handoff
-- Feed directly into `/qstack:why` (to pre-fill `.qstack/intent.yaml`) and `/qstack:architect` (Round 3 Brownfield delta-on-layout review).
+- Feed directly into `/qstack:why` (to pre-fill the intent YAML) and `/qstack:architect` (Round 3 Brownfield delta-on-layout review).
 - **Harness rule**: Direct for focused scopes; 1 read-only `subagent` if scanning a large multi-package repo.

@@ -1,6 +1,6 @@
 ---
 name: mode
-description: Full-lifecycle qstack orchestrator (/qstack:mode). Drives the strict 3-Round workflow: Round 1 (/qstack:why auto-setup, triage, interview-me, gitignored .qstack/intent.yaml) -> Round 2 (flexibility critique & .qstack/roadmap.md) -> Round 3 (/qstack:architect data-model & compute-graph skeleton with human stop gate) -> sub-path Reference build, /qstack:verify, optional /qstack:perf, and roadmap marking.
+description: Full-lifecycle qstack orchestrator (/qstack:mode). Drives the strict 3-Round workflow: Round 1-2 (/qstack:why triage, Read-Before-Asking, interview, confirmed intent committed as docs/intent/<task>.yaml) -> Round 3 (/qstack:architect skeleton or delta as the plan gate, or the ops playbook) -> sub-path Reference build, /qstack:verify, optional /qstack:perf, and roadmap marking in the intent file.
 ---
 
 # /qstack:mode — End-to-End Quant Orchestrator (Rounds 1 -> 2 -> 3 -> Delivery)
@@ -8,22 +8,23 @@ description: Full-lifecycle qstack orchestrator (/qstack:mode). Drives the stric
 You are operating in **qstack mode**. Enforce strict upfront intent alignment, compute-graph decomposition, skeleton-first review, and human-compromised code.
 
 ## Master Flow
-1. **Round 1 & Round 2 (`/qstack:why`)**:
+1. **Round 1 & Round 2 (`/qstack:why`, run by the intake owner)**:
    - Read `../../references/principles.md` and `../../references/00-protocol.md`.
-   - Auto-run setup/triage. If the task is a tiny one-off script, execute the **Fast Path** (brief plan -> implement -> test) and finish.
-   - For medium+ tasks: run `interview-me` (business type, engineering type, core mission) -> create gitignored `.qstack/` scaffold with pre-filled `.qstack/intent.yaml` -> return YAML to human -> iterate & critique for contradictions and future-flexibility hazards -> write `.qstack/roadmap.md` (`CLI <-> Compute Graph Sub-Path` for graph tasks; direct node target for single-node tasks).
-   - **STOP at Gate 1** until zero objections remain and the human approves `.qstack/intent.yaml` + `.qstack/roadmap.md`.
+   - Triage by semantic risk (`02` §1). Fast Path (brief plan -> implement -> test) for everything below medium+, and finish.
+   - For medium+ tasks: Read-Before-Asking -> interview (≤ 2 batches) -> draft the envelope + body + roadmap -> interrogate -> every objection closed as `answer` or `non_goal` -> confirmation. Ops routing: a production/authority-boundary request or a read-only audit of a production system or shared host goes to `./playbooks/ops-change.md` with `../../templates/ops-change.yaml`; a non-production code change keeps its own playbook even if it ships through a release.
+   - **STOP at Gate 1** until the human confirms. On a work board the confirmed YAML goes into the task brief; directly, write `<intent folder>/<task>.yaml`.
 2. **Round 3 (`/qstack:architect`) — ZERO Concrete Business Logic Yet**:
-   - Start from Data Models + reusable Compute-Graph routing.
-   - **Greenfield**: Present Layout (core CLIs <-> graph sub-paths) + create fill-in-the-blank `.py` files with typed `class`/`function` stubs.
-   - **Brownfield**: Present existing Layout + annotate **Add to graph / Rewire routing / Polish without changing routing**.
+   - Start from Data Models + reusable Compute-Graph routing. On a work board this round is the task's plan (Gate 1B = plan approval).
+   - **Ops routing**: skip the code skeleton; follow `./playbooks/ops-change.md` (runbook + rehearsal plan at Gate 1B, separate go/no-go before the production step).
+   - **Greenfield**: Present Layout (core CLIs <-> graph sub-paths) + the fill-in-the-blank `.py` files with typed `class`/`function` stubs (listed in the plan, written right after approval).
+   - **Brownfield**: Present existing Layout (or the delta on the design sources the Hook names) + annotate **Add to graph / Rewire routing / Polish without changing routing**.
    - **STOP at Gate 1B** for human review of Layout, routing, and stubs.
 3. **Sub-Path-by-Sub-Path Delivery & Verification**:
    - Load ONLY the single matching playbook in `./playbooks/` (`greenfield.md`, `add-component.md`, `fix-and-parity.md`, `evolve-boundary.md`, `explore-alpha.md`, `optimize-perf.md`, `ship-and-feed.md`, `ops-change.md` for an audit, incident, release/cutover or live change on production).
    - Select minimum-cost native Harness (`../../references/06-collaboration-and-hook.md`): Direct for interactive/tight tasks, `subagent` for isolated heavy reads, `dynamic workflow` for deterministic fan-out/parallel verification, `swarm` only after Round 3 stubs freeze & human approves, bounded `goal` only for machine-verifiable long parity/perf loops.
-   - For each Phase/sub-path in `.qstack/roadmap.md`:
+   - For each phase/sub-path in the intent file's `roadmap` (committed with `status: building` right after Gate 1B):
      1. Fill Math-First Reference logic (no premature optimization);
-     2. Run `/qstack:verify` on non-degenerate synthetic data (hand-calc oracle, future perturbation, `Batch == Step`, and model label-window Purge/Embargo when applicable) -> **Gate 2** human math audit;
-     3. Connect real data, profile, run `/qstack:perf` ONLY if budgets fail (human approves speedup vs readability) -> **Gate 3**;
-     4. Mark the Phase `[x]` with evidence **in-place in `.qstack/roadmap.md`**.
+     2. Run `/qstack:verify` on non-degenerate synthetic data (hand-calc oracle, future perturbation, `Batch == Step`, and model label-window Purge/Embargo when applicable) -> **Gate 2** human math audit (on a board: the host check + review);
+     3. Connect real data, profile, run `/qstack:perf` ONLY if budgets fail (human approves speedup vs readability) -> **Gate 3** (on a board: the human's merge approval; ops production steps need a separate go/no-go after rehearsal);
+     4. Mark the phase `done` with evidence in the intent file; set `status: delivered` in the last commit.
 4. **Pause / Close**: Use `/qstack:pause` for cold-start handoffs; follow `./playbooks/ship-and-feed.md` on final close.

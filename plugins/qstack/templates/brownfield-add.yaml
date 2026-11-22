@@ -1,4 +1,5 @@
 # Brownfield Add Card (Template B — Mode ①: Add to Compute Graph)
+# Body only: wrap it in templates/intent-envelope.yaml (task, status, confirmed, sources, objections, decisions, roadmap).
 # Workflow: Agent reads existing api.py, README.md, and 1-2 sibling implementations first,
 #           pre-fills everything known from the codebase, and returns this YAML to the human.
 
@@ -24,4 +25,3 @@ new_semantics:                     # Human-owned core decisions (only what codeb
   reference_code: ""               # Optional: research script or paper formula implementation
 
 independent_oracle: "<hand-calc case / analytical identity / pinned baseline>"
-open_questions_and_pushback: []    # Populated by agent (missing red slots or flaws spotted)

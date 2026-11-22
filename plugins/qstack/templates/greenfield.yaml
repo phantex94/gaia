@@ -1,4 +1,5 @@
 # Greenfield Intent Blueprint (Template A — Semi-Structured Markup)
+# Body only: wrap it in templates/intent-envelope.yaml (task, status, confirmed, sources, objections, decisions, roadmap).
 # Note: This design-time YAML is flexible human-agent alignment markup.
 #       Humans may freely add, rename, or omit keys as long as intent is clear;
 #       the agent parses it semantically and returns an updated copy for Gate 1 sign-off.
@@ -87,5 +88,3 @@ scale_and_perf:
   target_scale: "<e.g., N assets x T days x B candidates>"
   device: "<e.g., CPU Reference first, then CUDA>"
   budgets: "<latency, peak memory, persistent state; readability_first=true>"
-
-open_questions_and_pushback: []    # Populated by agent with missing red items & critique

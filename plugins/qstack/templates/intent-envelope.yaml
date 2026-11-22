@@ -1,0 +1,39 @@
+# Intent Envelope (shared by every intent template; field names are fixed)
+# File: <intent folder>/<task>.yaml (default docs/intent/), committed by the builder after Gate 1B.
+# Layout: these envelope fields first, then the matching body template, then roadmap.
+
+task: "<board key + slug, e.g. abc-12-short-name | without a board: yyyy-mm-dd-short-name>"
+status: confirmed                  # unconfirmed | confirmed | building | delivered | superseded
+confirmed:
+  by: "<human>"
+  on: "<yyyy-mm-dd>"
+  via: "<coordinator | qstack:why>"
+supersedes: ""                     # Optional: earlier intent file this one replaces
+sources:                           # What Read-Before-Asking read (files, ADR ids, design/component page ids)
+  - "<path or page id>"
+
+# <body template goes here: greenfield | brownfield-add | brownfield-improve | brownfield-evolve | ops-change>
+
+objections:                        # Every finding from interrogate; only the human closes one
+  - id: O1
+    issue: "<what is unclear, contradictory or risky>"
+    resolution: answer             # answer | non_goal
+    text: "<the human's choice, or what is out of scope>"
+decisions: []                      # Later human answers, appended: { on: yyyy-mm-dd, question: "", answer: "" }
+
+roadmap:                           # Outcome-level at Gate 1; refined into CLI <-> sub-path or node contracts at Gate 1B
+  task_shape: "<graph sub-path delivery | single-node task | ops change>"
+  graph:                           # Optional, graph tasks only
+    shared_nodes: ["<N1: e.g. pit_panel_view (reused by build, run, evaluate)>"]
+    overview: "<Raw -> [N1] -> [N2] -> [N3]>"
+  phases:
+    - id: P0
+      deliverable: "<Round 3 skeleton or delta on the existing layout -> Gate 1B>"
+      acceptance: "<plan approved>"
+      status: todo                 # todo | done | deferred
+      evidence: ""                 # Commit, command + result, or approval note
+    - id: P1
+      deliverable: "<core CLI <-> compute-graph sub-path, or node contract>"
+      acceptance: "<hand-calc oracle + future perturbation + Batch == Step on synthetic data>"
+      status: todo
+      evidence: ""
