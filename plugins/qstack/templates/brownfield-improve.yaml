@@ -1,0 +1,25 @@
+# Brownfield Polish / Fix / Optimize Card (Template C — Mode ③: Polish Internals, Zero Routing Change)
+# Workflow: Agent inspects current implementation, callers, and existing tests first,
+#           pre-fills baseline behavior and blast radius, and returns this YAML for sign-off.
+
+meta:
+  mode: brownfield_improve         # fix | optimize | semantic_change
+  maturity: L2
+  target_modules: ["<agent pre-fills: files & symbols touched>"]
+  downstream_impact: ["<agent pre-fills: callers & tests affected>"]
+
+delta:                             # Human-owned: exact before-vs-after contract
+  current_behavior: "<agent pre-fills: observed current behavior>"
+  desired_behavior: "<human confirms: target behavior>"
+  compatibility: "<preserve_repro | version_bump | new_vintage_keep_as_traded>"
+
+optimization_tradeoff:             # Required only for performance optimization (human approval)
+  profiling_bottleneck: "<measured I/O vs copy vs compute vs memory breakdown>"
+  expected_gain: "<expected speedup or memory reduction>"
+  readability_cost: "<complexity introduced & whether Reference stays as permanent test anchor>"
+
+verification:
+  repro_case: "<minimal failing test or pinned baseline snapshot>"
+  equivalence_check: "<numeric tolerance + discrete ranking/threshold/position parity>"
+
+open_questions_and_pushback: []

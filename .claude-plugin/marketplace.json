@@ -1,0 +1,16 @@
+{
+  "name": "qstack",
+  "owner": {
+    "name": "Quant Development Team"
+  },
+  "metadata": {
+    "description": "qstack (managed in gaia) — A pstack-inspired, strict 3-Round skill stack for human-agent quantitative framework and strategy development."
+  },
+  "plugins": [
+    {
+      "name": "qstack",
+      "source": "./plugins/qstack",
+      "description": "Disciplined human-agent co-development stack for quant systems: /qstack:why strict Round 1-2 intake & roadmap, /qstack:architect Round 3 data-model & compute-graph skeleton, /qstack:verify PIT/Batch=Step/Embargo verification, and /qstack:perf readability-preserving optimization."
+    }
+  ]
+}

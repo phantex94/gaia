@@ -1,0 +1,91 @@
+# Greenfield Intent Blueprint (Template A — Semi-Structured Markup)
+# Note: This design-time YAML is flexible human-agent alignment markup.
+#       Humans may freely add, rename, or omit keys as long as intent is clear;
+#       the agent parses it semantically and returns an updated copy for Gate 1 sign-off.
+#       (By contrast, runtime execution YAMLs remain strictly schema-validated.)
+#
+# Active Defaults (no need to restate unless overriding in defaults_override):
+#   - Acyclic layered dependencies (import strictly lower layers; public api.py boundary)
+#   - CLI-first interface (<tool> <domain> <action> --config ...; Dry-run by default)
+#   - Structured runtime YAML with strict boundary validation & no hidden semantic defaults
+#   - Single-point PIT truncation & fail-closed Refusal (NaN/null preserved)
+#   - Round 3 Skeleton (Layout + fill-in-the-blank .py stubs) -> Synthetic -> Real Data
+
+meta:
+  project: "<project_name>"
+  mode: greenfield
+  active_slice: P0                 # Only expand and build this slice now; P1/P2 stay placeholders
+  maturity: L2                     # L1 (exploration) | L2 (reusable framework) | L3 (production)
+
+goal:
+  summary: "<one-sentence objective>"
+  non_goals:
+    - "<explicitly out of scope>"
+  defaults_override: {}            # Declare any intentional exceptions to the defaults above
+
+# Optional: Reference repos/modules and layout expectations.
+# Rule: When reference_architecture is given, the agent MUST scan its root docs
+#       and every sub-package README.md / api.py before asking questions or drawing Layout.
+architecture_hints:
+  reference_architecture:
+    - "<optional path to reference repo or module>"
+  expected_layout:                 # Optional: write expected layers/dirs or omit to let agent propose
+    - "L0 kernel: Refusal / units / calendar"
+    - "L1 config: YAML -> frozen Params"
+    - "L2 assets: PIT truncation & partitioned storage"
+    - "L3 domains (no sibling imports): data / alpha / portfolio / sim"
+    - "L4+ orchestration & CLI"
+
+# Global top/bottom anchors (state intent or point directly to sample files; no need to list every column)
+system_ends:
+  top_input:
+    intent: "<what enters the system at the very top>"
+    reference_data: ""             # Optional: path to standardized sample data file
+    reader_code: ""                # Optional: path/callable if format is bespoke; omit if standard
+  final_output:
+    intent: "<what exits the system and who consumes it>"
+    reference_data: ""             # Optional: path to sample output file
+
+# Priority slices: each slice owns its own IO contract and optional reference data/code
+slices:
+  P0:
+    summary: "<smallest meaningful end-to-end slice>"
+    io_contract:
+      input:
+        intent: "<P0 input data shape/semantics>"
+        reference_data: ""         # Optional
+        reader_code: ""            # Optional
+      output:
+        intent: "<P0 output artifacts & state>"
+        reference_data: ""         # Optional
+    stages:
+      - name: "<stage 1>"
+        intent: "<what this stage transforms>"
+        reference_code: ""         # Optional: reference implementation path
+        reference_data: ""         # Optional: stage sample data path
+      - name: "<stage 2>"
+        intent: "<what this stage transforms>"
+    key_semantics:                 # Human-owned non-negotiables (natural language is fine)
+      - "<PIT / availability / price basis>"
+      - "<missing / suspended / edge-case semantics>"
+      - "<batch vs step state & label-window embargo if training models>"
+    independent_oracle: "<hand-calc sample / known formula / pinned reference + tolerances>"
+
+  P1:
+    summary: "<next priority expansion>"
+    io_contract:
+      input: { intent: "", reference_data: "" }
+      output: { intent: "", reference_data: "" }
+
+  P2:
+    summary: "<later scaling, acceleration, or productionization>"
+    io_contract:
+      input: { intent: "", reference_data: "" }
+      output: { intent: "", reference_data: "" }
+
+scale_and_perf:
+  target_scale: "<e.g., N assets x T days x B candidates>"
+  device: "<e.g., CPU Reference first, then CUDA>"
+  budgets: "<latency, peak memory, persistent state; readability_first=true>"
+
+open_questions_and_pushback: []    # Populated by agent with missing red items & critique

@@ -1,0 +1,15 @@
+# 05 | High-Frequency Scenario Playbook
+
+Map concrete requests directly to Context (`A/B/C/D`) x Maturity (`L1/L2/L3`), template, and mandatory proof.
+
+- **S1 | Add Factor or Operator**: `B (Add)` x `L1 -> L2`. Pre-fill `templates/brownfield-add.yaml` from sibling factor/operator; mark Mode ① (Add to Graph) on existing Layout. Lock: PIT input & universe filter timing, formula/ddof/warmup, TS vs CS group key, NaN/suspension rules, sufficient state. Proof: hand-calc oracle + future perturbation + `Batch == Step` + rank stability.
+- **S2 | Add/Iterate Alpha Combine or Model**: `B (Add)` or `D (Rewire)` x `L1 -> L2`. Lock: factor versions, label horizon `n` & fill price, `label_end(t)=t+n <= split_cutoff` purging & embargo, train-only preprocessing, `model_available_time >= max(label_end)`, RNG derivation. Proof: post-split perturbation + deterministic rerun + incremental value over baseline.
+- **S3 | Portfolio Constraints or Risk Rules**: `B (Add plugin)` or `C (Polish/Improve)` x `L2`. Lock: objective & risk units, exposure/turnover/hysteresis limits, untradeable residual weight rule, lot rounding, infeasibility refusal/fallback. Proof: extreme-signal / mass-suspension / infeasible boundary tests + attribution delta.
+- **S4 | New Data Source or Upstream Format/Availability Change**: `B (Add)` or `C (Improve)` x `L2/L3`. Accept `reference_data` + `reader_code`. Lock: primary key, units, timezone/calendar, true availability time, freshness limit, new revision/vintage if meaning changed. Proof: normalization & lag isolated in data boundary + malformed/stale refusal + zero downstream factor rewrites.
+- **S5 | Historical Data Revision & Cache Invalidation**: `C (Improve/Ops)` x `L2/L3`. Compute affected DAG range from node invalidation/replay/refit policies (not lookback alone). Write new `vintage`; keep As-Traded immutable and referenced old artifacts intact. Proof: original As-Traded reproduction + new vintage parity + no stale cache hit.
+- **S6 | Debug Batch/Step Drift or Crash Recovery**: `C (Fix)` x `L2/L3`. Binary-search the consumer chain for the first diverging node (check inputs/cutoff, `state_{t-1}` sufficiency, order-dependent reductions/RNG, CS sharding). Proof: failing repro test first -> green fix -> concurrent rerun & post-commit crash recovery (one logical result, unique rows, single state transition).
+- **S7 | Performance Optimization or Hardware Migration**: `C (Optimize)` x current tier. Mandatory `/qstack:perf`: profile real bottleneck first -> get human approval on Speedup vs Readability Cost -> optimize -> prove numeric + discrete decision + state parity against Reference.
+- **S8 | New Subsystem / Promote Strategy to Framework / Go-Live**:
+  - New subsystem/rewrite -> `A (Greenfield)` x `L2/L3` -> `.qstack/intent.yaml` + `.qstack/roadmap.md` -> `/qstack:architect` (Layout + fill-in-the-blank `.py` stubs) -> synthetic -> real.
+  - Promote L1 strategy to L2 framework -> `D (Rewire)` -> `templates/brownfield-evolve.yaml` + 2 sketches -> existing Layout + Mode ② annotation.
+  - Go-live -> `L3` checklist: real test sink, human-confirmed alert receipt, stale refusal, shadow period, cutover & rollback.

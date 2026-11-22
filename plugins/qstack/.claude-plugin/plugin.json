@@ -1,0 +1,8 @@
+{
+  "name": "qstack",
+  "version": "0.2.0",
+  "description": "Quant Development Brain skill stack (v0.2): strict Round 1 (auto-setup, interview-me, gitignored .qstack/intent.yaml) -> Round 2 (flexibility critique, CLI-to-subpath roadmap.md) -> Round 3 (data-model & compute-graph skeleton with fill-in-the-blank stubs before any business logic).",
+  "author": {
+    "name": "Quant Development Team"
+  }
+}

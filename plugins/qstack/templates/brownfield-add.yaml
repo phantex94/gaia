@@ -1,0 +1,27 @@
+# Brownfield Add Card (Template B — Mode ①: Add to Compute Graph)
+# Workflow: Agent reads existing api.py, README.md, and 1-2 sibling implementations first,
+#           pre-fills everything known from the codebase, and returns this YAML to the human.
+
+meta:
+  mode: brownfield_add
+  maturity: L1                     # L1 (explore) | L2 (shared library) | L3 (production)
+  target_mount: "<agent pre-fills: package & extension point, e.g. alpha:@alpha>"
+  reference_sibling: "<agent pre-fills: closest existing implementation path>"
+
+io_contract:                       # Agent pre-fills from existing codebase; human confirms or adjusts
+  input:
+    intent: "<existing upstream data object / columns>"
+    reference_data: ""             # Optional: sample file if introducing new data
+    reader_code: ""                # Optional: custom reader if non-standard
+  output:
+    intent: "<aligned with existing downstream contract>"
+
+new_semantics:                     # Human-owned core decisions (only what codebase cannot answer)
+  formula_and_axis: ""
+  pit_and_missing: ""
+  state_and_batch_step: ""
+  label_embargo_if_model: ""       # If training a model: n-day horizon & label_end(t)=t+n <= split_cutoff
+  reference_code: ""               # Optional: research script or paper formula implementation
+
+independent_oracle: "<hand-calc case / analytical identity / pinned baseline>"
+open_questions_and_pushback: []    # Populated by agent (missing red slots or flaws spotted)

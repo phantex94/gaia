@@ -1,0 +1,29 @@
+# Brownfield Rewire / Boundary Evolution Card (Template D — Mode ②: Rewire Graph Routing)
+# Workflow: Agent reads current topology, proposes before/after dependency DAG and 2 caller sketches,
+#           and returns this YAML for human selection.
+
+meta:
+  mode: brownfield_evolve
+  maturity: L2
+  extension_direction: "vertical | horizontal | boundary_refactor"
+
+boundary_change:
+  before_topology: "<agent pre-fills: current module dependencies & friction>"
+  after_topology: "<target layers / layout>"
+  new_io_contract:
+    input: { intent: "", reference_data: "", reader_code: "" }
+    output: { intent: "", reference_data: "" }
+
+two_sketches:                      # Required for consequential L2/L3 boundaries
+  sketch_a: "<interface sketch + caller ergonomics / change locality / performance trade-off>"
+  sketch_b: "<structurally different sketch + trade-off>"
+  recommended: "<sketch_a | sketch_b and why>"
+
+migration_plan:
+  strategy: "<cutover | dual_path_transition>"
+  slices:
+    - "P0: Existing Layout + Mode ② Rewire stubs & layer check"
+    - "P1: Migrate first real caller + synthetic/parity verification"
+    - "P2: Remove legacy path"
+
+open_questions_and_pushback: []
