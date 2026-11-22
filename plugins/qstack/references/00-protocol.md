@@ -17,7 +17,7 @@ Two roles carry the rounds:
 ### Round 2 — Interrogate, Converge & Confirm (Gate 1)
 1. Draft the **Intent YAML** from the matching template and run `/qstack:interrogate`: every finding becomes an **objection** `O<n>`.
 2. **Convergence rule**: each objection is closed by the human as `answer` or `non_goal`; nothing else closes it. At most 2 question batches + 1 confirmation (`02` §1). No unbounded rounds.
-3. Add the **`roadmap`** section (`templates/roadmap.yaml`) at outcome level: one phase per deliverable with acceptance.
+3. Add the **`roadmap`** section (`templates/intent-envelope.yaml`) at outcome level: one phase per deliverable with acceptance.
 4. **Gate 1** = the human's confirmation. The confirmed YAML travels with the task (on a board: in the task description) and is committed by the builder as the **intent file** `<intent folder>/<task>.yaml` (default `docs/intent/`; the Hook may rename it).
 
 ### Round 3 — Data-Model & Compute-Graph Skeleton First (`/qstack:architect`, ZERO Business Logic, Gate 1B)
@@ -50,6 +50,6 @@ Envelope fields shared by every intent template: `task`, `status`, `confirmed`, 
 6. Readable identity: logical keys are business fields and readable versions; equality is checked by comparing content directly. A repo that needs hashes declares them in its Hook.
 
 ## 3. Two-Axis Routing & Three-Tier Authority
-- **Axis 1 (Context)**: `A. Greenfield` | `B. Brownfield Add (to graph)` | `C. Brownfield Polish (no routing change)` | `D. Brownfield Rewire (routing/boundary evolution)`.
+- **Axis 1 (Context)**: `A. Greenfield` | `B. Brownfield Add (to graph)` | `C. Brownfield Polish (no routing change)` | `D. Brownfield Rewire (routing/boundary evolution)` | `O. Ops Change / Production Audit (ops-change.md)`.
 - **Axis 2 (Maturity)**: `L1 Explore` (PIT, I/O, split isolation, independent oracle, runtime YAML) | `L2 Reusable` (+ skeleton/boundary review, sufficient state, `Batch == Step`, CLI/YAML, scale budgets) | `L3 Production` (+ atomic commit, reconciliation, real channel & human-confirmed alerts, shadow/rollback).
 - **Authority**: **Red (Human-Owned)** — I/O, priority slices, PIT/math/NaN/fill/compatibility (agent never guesses & pushes back on flaws); **Yellow (Co-Designed)** — Layout, routing, 2 sketches, speedup-vs-readability; **Green (Agent-Owned)** — internal helpers, validation, tests, profiling, evidence logs.

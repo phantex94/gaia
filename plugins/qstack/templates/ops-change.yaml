@@ -3,12 +3,13 @@
 # Slots C1-C7 and A/I/U/Q/M/D/H: references/02 section 5. Playbook: skills/mode/playbooks/ops-change.md.
 # Fill boundary facts from measurement on the host; drop blocks marked for another variant or class.
 
-task: "<board key + slug, e.g. abc-12-move-input-root>"
-status: unconfirmed                # unconfirmed | confirmed | building | delivered
+task: "<board key + slug, e.g. abc-12-move-input-root | without a board: yyyy-mm-dd-short-name>"
+status: confirmed                  # unconfirmed | confirmed | building | delivered | superseded
 confirmed:
   by: "<human>"
   on: "<YYYY-MM-DD>"
-  via: "<interview | board message | plan approval>"
+  via: "<coordinator | qstack:why | plan approval>"
+supersedes: ""                     # Optional: earlier intent file this one replaces
 sources:                           # what was read or measured, and where
   - "<e.g. scheduler listing on the production host, traced reads of job X, Hook ops block>"
 
@@ -93,19 +94,25 @@ objections:                        # each closed by the human
 decisions: []                      # later human answers, dated
 
 roadmap:                           # audit: scan + report only
-  - deliverable: "Measured inventory and runbook in the plan"
-    acceptance: "Board plan gate approves runbook and rehearsal plan"
-    status: todo                   # todo | done | deferred
-    evidence: ""
-  - deliverable: "Rehearsal on a copy (forward and undo)"
-    acceptance: "Pass criteria of the rehearsal plan met"
-    status: todo
-    evidence: ""
-  - deliverable: "Go/no-go: human releases the production step"
-    acceptance: "Permission answer recorded under decisions"
-    status: todo
-    evidence: ""
-  - deliverable: "Production step executed and verified"
-    acceptance: "C7 checks pass; deferred checks have owner and time"
-    status: todo
-    evidence: ""
+  task_shape: ops change
+  phases:
+    - id: P0
+      deliverable: "Measured inventory and runbook in the plan"
+      acceptance: "Board plan gate approves runbook and rehearsal plan"
+      status: todo                 # todo | done | deferred
+      evidence: ""
+    - id: P1
+      deliverable: "Rehearsal on a copy (forward and undo)"
+      acceptance: "Pass criteria of the rehearsal plan met"
+      status: todo
+      evidence: ""
+    - id: P2
+      deliverable: "Go/no-go: human releases the production step"
+      acceptance: "Permission answer recorded under decisions"
+      status: todo
+      evidence: ""
+    - id: P3
+      deliverable: "Production step executed and verified"
+      acceptance: "C7 checks pass; deferred checks have owner and time"
+      status: todo
+      evidence: ""
