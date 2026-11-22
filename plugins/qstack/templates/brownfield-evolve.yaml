@@ -1,4 +1,5 @@
 # Brownfield Rewire / Boundary Evolution Card (Template D — Mode ②: Rewire Graph Routing)
+# Body only: wrap it in templates/intent-envelope.yaml (task, status, confirmed, sources, objections, decisions, roadmap).
 # Workflow: Agent reads current topology, proposes before/after dependency DAG and 2 caller sketches,
 #           and returns this YAML for human selection.
 
@@ -25,5 +26,3 @@ migration_plan:
     - "P0: Existing Layout + Mode ② Rewire stubs & layer check"
     - "P1: Migrate first real caller + synthetic/parity verification"
     - "P2: Remove legacy path"
-
-open_questions_and_pushback: []

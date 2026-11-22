@@ -1,6 +1,6 @@
 ---
 name: pause
-description: Cold-start safe handoff checkpoint (/qstack:pause). Persists exact git revision, frozen Intent YAML link, verified evidence, unverified items, open Red/Yellow decisions, and the exact next command so a fresh session resumes with zero context loss.
+description: Cold-start safe handoff checkpoint (/qstack:pause). Persists exact git revision, intent file path, verified evidence, unverified items, open Red/Yellow decisions, and the exact next command so a fresh session resumes with zero context loss.
 ---
 
 # /qstack:pause — Cold-Start Safe Handoff
@@ -10,8 +10,8 @@ description: Cold-start safe handoff checkpoint (/qstack:pause). Persists exact 
 2. Collect ground-truth workspace state (never guess from memory):
    - Exact branch & git commit SHA (and whether dirty changes exist);
    - Active context (`A/B/C/D` x `L1/L2/L3`) and active slice (`P0 / P1 / P2`);
-   - Path to `.qstack/intent.yaml` and `.qstack/roadmap.md`;
+   - Path to the intent file `<intent folder>/<task>.yaml`, its `status`, and its open `roadmap` phases;
    - Verified items (with exact commands & pass results) vs in-progress/unverified items;
    - Unresolved Red/Yellow decisions or external blockers;
    - Exact next `/qstack:<verb>` or CLI command to run on resume.
-3. Write the handoff note to `docs/tasks/<task>-handoff.md` (or `.qstack/handoff.md` if the repo has no `docs/tasks/` convention) and confirm no background/remote side effects are left in an ambiguous state.
+3. Write the handoff note to the host's handoff file when it names one (e.g. a work board's closing note), else `docs/tasks/<task>-handoff.md`, and confirm no background/remote side effects are left in an ambiguous state.

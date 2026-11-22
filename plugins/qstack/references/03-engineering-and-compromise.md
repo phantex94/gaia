@@ -36,7 +36,7 @@ Connect real fixtures/snapshots, verify parity against pinned legacy baselines w
   3. Zero implicit defaults for semantic parameters; only pure runtime controls (threads, chunk size) may default.
   4. Use one commented template per workflow + explicit overlays for environments/experiments—never copy-paste full configs.
   5. Signature order: `(business_inputs, params_obj, *, runtime_controls)`. Forbid `**kwargs` passthrough; return named immutable records.
-  6. Persist a Run Record (effective YAML + `config_digest`, git SHA, input revision IDs, predecessor state ID, numerical environment).
+  6. Persist a Run Record (the effective resolved YAML itself + readable `config_version`, git commit, input revision IDs, predecessor state ID, numerical environment). Reproduction is checked by comparing that content directly.
 
 ## 4. CLI-First & Script-Orchestrated Execution
 - Shape: `<tool> <domain> <action> --config <path.yaml> [--override k=v] [--write]`. CLI is a thin shell containing zero business arithmetic.

@@ -8,9 +8,9 @@ description: Initialize qstack in a target quant repository (/qstack:setup). Sca
 ## Steps
 1. Read `../../references/06-collaboration-and-hook.md` and `../../templates/project-policy-hook.md`.
 2. Inspect the target repository root (`AGENTS.md`, `CLAUDE.md`, `pyproject.toml`, existing package `README.md`, layer checker scripts, and CLI entrypoint). If a large `reference_architecture` path is supplied, summarize its package conventions first (use a read-only `subagent` if >15 files).
-3. Draft a concise, repo-specific **Project Policy Hook** pre-filled with real observed facts (language/engines, allowed-import table & checker command, CLI command shape, research vs production roots, compute/channel guardrails, harness rules).
+3. Draft a concise, repo-specific **Project Policy Hook** pre-filled with real observed facts (language/engines, allowed-import table & checker command, CLI command shape, intent folder, design sources & which wins, docs language, identity rules, research vs production roots, ops static facts, compute/channel guardrails, harness rules and check command).
 4. **Return the drafted Hook to the human for confirmation** before writing it into the repository's `AGENTS.md` or `PROJECT_POLICY.md`.
-5. Ensure `.qstack/` is listed in `.gitignore` if the human adopts the gitignored working scaffold convention.
+5. Confirm the intent folder (default `docs/intent/`) is tracked by git and not ignored; it is where confirmed intents are committed.
 
 ## Guardrails
 - Keep `qstack` itself 100% repo-agnostic; all project quirks belong strictly in the target repo's Hook.

@@ -1,47 +1,32 @@
 ---
 name: why
-description: Strict Round 1 + Round 2 entry point (/qstack:why). Auto-runs setup & triage (Greenfield vs Brownfield, effort size). Fast-paths tiny scripts; for medium+ tasks runs interactive interview-me, creates gitignored .qstack/intent.yaml scaffold, iteratively interrogates for contradictions & future-flexibility hazards, and produces .qstack/roadmap.md before any business code is written.
+description: Strict Round 1 + Round 2 intake (/qstack:why). Triages the request (fast path vs medium+ by semantic risk, not size), reads the repo and its design sources before asking, interviews the human in at most 2 batches plus 1 confirmation, closes every objection as answer or non-goal, and produces the confirmed intent YAML (envelope + body + roadmap) committed as docs/intent/<task>.yaml. Runs at a work board's coordinator before the task exists, or directly in a repo. Never writes business code.
 ---
 
-# /qstack:why — Strict Round 1 (Intake & Scaffold) & Round 2 (Review & Roadmap)
+# /qstack:why — Strict Round 1 (Triage & Interview) & Round 2 (Interrogate & Confirm)
 
 **HARD RED LINE: DO NOT WRITE ANY CONCRETE BUSINESS LOGIC IN THIS MODE.**
 
-## Round 1: Auto-Setup, Triage, Interview & Gitignored Scaffold
+You are the **intake owner** (`../../references/00-protocol.md` §1): either a work board's coordinator before the task is added (you have no worktree: write no repo files, hand the confirmed YAML over in the task brief), or an agent working directly in the repo (you write the intent file yourself).
 
-1. **Silent Context Ingest & Auto-Setup (`Read-Before-Asking`)**:
-   - Read `../../references/principles.md` and `../../references/02-anti-ambiguity-yaml.md`.
-   - Inspect the starting directory: check if it is an existing repo (Brownfield) or empty/new (Greenfield), read `AGENTS.md` / `Project Policy Hook` (if missing in an existing repo, silently note setup items or fold lightweight setup into triage), and read any referenced `README.md`, `api.py`, `reference_architecture`, `reference_data`, or `reader_code`.
-2. **Triage (Context x Type x Effort)**:
-   - Classify: **Greenfield vs Brownfield**, task type, and effort size.
-   - **Fast Path (One-off script or tiny isolated edit)**: Do NOT create heavy scaffolding. Output a brief plan, execute directly, and verify with a runnable test. Done.
-   - **Medium+ Path (Greenfield or multi-file / architectural task)**: Proceed to Step 3.
-3. **Interactive Interview (`interview-me` discipline)**:
-   - Use structured interactive questions (e.g. `AskUserQuestion` when available, otherwise concise numbered choices) to confirm 3 foundational pillars with the human:
-     1. **Business Type** (which quant stages/domain: Data / Factor / Alpha-Model / Portfolio / Execution / Simulation-Risk);
-     2. **Engineering Type** (Greenfield vs Brownfield: Add to graph / Rewire routing / Polish node internals; maturity L1/L2/L3);
-     3. **Core Mission & Non-Goals** (what success looks like & what is explicitly out of scope).
-4. **Round 1 Output — Gitignored `.qstack/` Scaffold + Pre-Filled Intent YAML (`Return-The-YAML`)**:
-   - Ensure `.qstack/` is listed in `.gitignore` (add it cleanly if absent) so working scaffolds never pollute git status.
-   - Select ONLY the matching template (`../../templates/greenfield.yaml`, `brownfield-add.yaml`, `brownfield-improve.yaml`, or `brownfield-evolve.yaml`).
-   - Write `.qstack/intent.yaml` pre-filled with the user's description + facts already read from existing code/references, AND **return the full pre-filled YAML directly to the human in chat** for Round 2 refinement.
+## Round 1: Triage, Read-Before-Asking & Interview
 
-## Round 2: Iterative Refinement, Flexibility Review & `roadmap.md`
+1. **Load**: `../../references/principles.md` and `../../references/02-anti-ambiguity-yaml.md` §1–3.
+2. **Triage** (`02` §1 step 1): medium+ on an unconfirmed Red item, a public contract change, a production/authority boundary, a new component, or cross-package work—plus the repo Hook's own triggers.
+   - **Fast Path**: brief plan -> execute -> runnable test. No intent file. Done.
+   - **Ops routing**: continue the interview below; a request that crosses the production/authority boundary (triage rule 3), or a read-only audit of a production system or shared host, routes to `../mode/playbooks/ops-change.md` with `../../templates/ops-change.yaml` instead of the code skeleton; a non-production code change keeps its own playbook even if it ships through a release. The ops template's body sits inside the same envelope.
+3. **Read-Before-Asking** (read-only, about 5 minutes; 1 read-only `subagent` for a large scan): `AGENTS.md` + Project Policy Hook, earlier intent files, touched `README.md`/`api.py`, `reference_*` inputs, and every design source the Hook names. Record what you read in `sources`. Ask only what they leave open; if a named source cannot be read, ask for it. Do not ask for host inventory—the builder measures it.
+4. **Interview** (`AskUserQuestion` when available, else numbered choices): ≤ 4 questions per batch, 2–4 options, **recommended option first**, a "make it a non-goal" option where meaningful. Priority: ① Red items that change the output, ② production/authority boundary, ③ scope & non-goals (Business Type, Engineering Type, Core Mission), ④ acceptance oracle. **At most 2 batches.**
 
-5. **Refine & Return Updated YAML**:
-   - The human may edit `.qstack/intent.yaml` directly (freely adding/removing keys—design-time YAML is flexible markup) OR expand requirements in prose. Update `.qstack/intent.yaml` semantically and return the updated YAML for confirmation.
-6. **Squeeze Intent & Flexibility Critique (`Challenge-Flaws-Early`)**:
-   - Once the human confirms the YAML draft, rigorously review it (invoke `/qstack:interrogate` discipline):
-     - Squeeze out remaining ambiguous business/quant semantics;
-     - Surface obvious contradictions and design choices that harm **future flexibility** (aim to prevent future full rewrites without over-designing premature details).
-   - Repeat until **zero objections remain** from all reviewing agents and the human signs off.
-7. **Generate `.qstack/roadmap.md` (Single Living Phase Tracker)**:
-   - Read `../../templates/roadmap.md` and write `.qstack/roadmap.md` listing every Phase's concrete deliverable:
-     - **For graph-level / multi-stage goals**: Express each Phase target as **`CLI command <-> Sub-path in the Big Computational Graph`**, explicitly identifying reusable shared nodes across CLIs.
-     - **For single-node tasks**: Do NOT force CLI/sub-path framing; state the node I/O contract and verification target directly.
-   - As each Phase completes later, mark `[x]` with evidence **in-place inside this same `.qstack/roadmap.md`**.
+## Round 2: Draft, Interrogate & Confirm (Gate 1)
+
+5. **Draft** from `../../templates/intent-envelope.yaml` wrapping ONLY the matching body (`greenfield.yaml`, `brownfield-add.yaml`, `brownfield-improve.yaml`, `brownfield-evolve.yaml`, or `ops-change.yaml` for ops routing), pre-filled with observed facts and the answers. Keys English; values in the repo's docs language.
+6. **Interrogate** (`/qstack:interrogate` lenses): every finding becomes an objection `O<n>`; ask the open ones within the 2-batch budget.
+7. **Confirm** (the last question call): show a short intent summary, the outcome-level `roadmap`, and every objection closed as `non_goal`. Options: "Confirm" / "Change …". Each objection must end as `answer` or `non_goal`—only the human closes one. No further rounds.
+8. **Hand off** with `status: confirmed`:
+   - **Board coordinator**: put the YAML in the task brief under `## Intent (confirmed)` and add the task with the host plan gate on.
+   - **Direct**: write `<intent folder>/<task>.yaml` (Hook folder, default `docs/intent/`) and commit it with the work.
 
 ## Exit & Handoff to Round 3
-- Stop at Gate 1 once `.qstack/intent.yaml` and `.qstack/roadmap.md` are approved.
-- **Next step**: Hand off to **`/qstack:architect`** for Round 3 (Data Models + Compute-Graph Routing + Skeleton Layout before any business logic).
-- **Harness rule**: Run **Direct** (at most 1 read-only `subagent` to scan a large `reference_architecture`). Never launch `swarm` or `goal` in Rounds 1–2.
+- **Next step**: the builder runs **`/qstack:architect`** (or the ops playbook) as its plan—Gate 1B—then commits the intent file unchanged with `status: building`.
+- **Harness rule**: Run **Direct** (at most 1 read-only `subagent`). Never launch `swarm` or `goal` in Rounds 1–2.

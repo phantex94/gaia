@@ -1,6 +1,6 @@
 ---
 name: architect
-description: Strict Round 3 skeleton-first design (/qstack:architect). Writes ZERO concrete business logic. Starts from data models and reusable computational-graph routing. For Greenfield, outputs Layout mapping core CLIs to graph sub-paths plus fill-in-the-blank .py files and typed class/function stubs, then STOPS for human review. For Brownfield, presents existing Layout and explicitly marks Add-to-graph vs Rewire-routing vs Polish-internals, then STOPS for human review.
+description: Strict Round 3 skeleton-first design (/qstack:architect). Writes ZERO concrete business logic. Starts from data models and reusable computational-graph routing. For Greenfield, outputs Layout mapping core CLIs to graph sub-paths plus fill-in-the-blank .py files and typed class/function stubs, then STOPS for human review. For Brownfield, presents existing Layout and explicitly marks Add-to-graph vs Rewire-routing vs Polish-internals, then STOPS for human review (on a work board: the task's plan is this review, Gate 1B).
 ---
 
 # /qstack:architect — Round 3: Data Models, Compute-Graph Routing & Skeleton First
@@ -10,13 +10,17 @@ description: Strict Round 3 skeleton-first design (/qstack:architect). Writes ZE
 The first deliverable always models **data structures** and **routing across the computational graph** so that graph nodes are cleanly reused across different features and CLIs.
 
 ## Steps
-1. Read `../../references/principles.md`, `../../references/03-engineering-and-compromise.md`, and the approved `.qstack/intent.yaml` + `.qstack/roadmap.md`.
+1. Read `../../references/principles.md`, `../../references/03-engineering-and-compromise.md`, and the confirmed intent (the task brief's `## Intent (confirmed)` or `<intent folder>/<task>.yaml`), including its `roadmap`.
+   - **Ops routing**: a request that crosses the production/authority boundary (triage rule 3), or a read-only audit of a production system or shared host, routes to `../mode/playbooks/ops-change.md` with `../../templates/ops-change.yaml` instead of the code skeleton; a non-production code change keeps its own playbook even if it ships through a release—stop here and follow it (runbook + rehearsal plan).
+   - **Design sources** the Hook names (design/component pages, ADRs, a contract crate): Round 3 may reduce to a **delta on those sources**—list which pages/contracts change and propose an ADR or contract change instead of editing pages you do not own.
 2. **Start from Data Models & Reusable Compute-Graph Nodes (`Pin-The-Ends`)**:
    - Define the core immutable data models (I/O contracts, state objects, frozen `Params` shells, `Refusal`).
    - Decompose required features from the **computational graph perspective**: show the big graph, which nodes are shared/reusable across features, and which sub-path each feature/CLI traverses.
    - For consequential L2/L3 boundaries, briefly compare **2 caller sketches** before freezing signatures.
 
 3. **Branch Strictly by Greenfield vs Brownfield**:
+
+   **Host plan gate**: when a host forbids repo changes before the plan is approved, the Round 3 output *is* the plan: Layout, routing, and the exact stub files with typed signatures written out in the plan. After approval, write the stubs exactly as planned as the first build step, together with the intent file (`status: building`).
 
    ### Path A: Greenfield (Skeleton + Fill-in-the-Blank Stubs)
    - **Step A1 — Present Layout & CLI-to-Subpath Map**:
@@ -28,7 +32,7 @@ The first deliverable always models **data structures** and **routing across the
      - Verify the static layer checker passes cleanly on the skeleton.
    - **Step A3 — HARD STOP (Gate 1B Human Review)**:
      - Present the Layout, CLI-to-subpath routing, `.py` file list, and stub signatures to the human.
-     - **WAIT for human approval** before filling any business logic. After approval, implement and review **sub-path by sub-path**, marking each Phase `[x]` in `.qstack/roadmap.md`.
+     - **WAIT for human approval** before filling any business logic. After approval, implement and review **sub-path by sub-path**, marking each phase `done` with evidence in the intent file's `roadmap`.
 
    ### Path B: Brownfield (Existing Layout + 3-Way Delta Annotation)
    - **Step B1 — Present Existing Layout & Graph Routing**:
@@ -42,4 +46,5 @@ The first deliverable always models **data structures** and **routing across the
      - Wait for human confirmation on the annotated existing layout and change scope before writing business code.
 
 4. **Emit Execution DAG & Native Harness Plan (`Minimal-Harness-Cost`)**:
+   - Refine the intent file's `roadmap` phases into `CLI <-> Sub-path` (graph tasks) or node contracts (single-node tasks).
    - Outline the post-review build DAG (sub-path by sub-path: Math-First Reference -> synthetic verification -> real data) and recommend the minimal Harness mode (`Direct` vs `dynamic workflow` for parallel horizontal nodes/verification vs `swarm` for approved multi-package concurrent work).

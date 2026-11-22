@@ -9,7 +9,7 @@ description: Independent quantitative verification (/qstack:verify). Builds non-
 
 ## Steps
 1. Read `../../references/principles.md` and `../../references/04-invariants-and-verification.md`.
-2. Inspect the frozen `.qstack/intent.yaml` (maturity tier `L1 / L2 / L3` and `independent_oracle`) and the implemented Reference/optimized code.
+2. Inspect the committed intent file `<intent folder>/<task>.yaml` (maturity tier `L1 / L2 / L3`, `independent_oracle`, Red answers in `objections`/`decisions`) and the implemented Reference/optimized code.
 3. Build and run the verification suite matching the maturity tier:
    - **Data Structure Contracts (`Pin-The-Ends`)**: Positive + `Refusal` tests for missing columns, wrong dtypes, invalid units, and boundary conversions.
    - **Independent Oracle**: Hand-calculated small case, analytical identity, clear Reference, or pinned legacy revision.
@@ -31,4 +31,4 @@ description: Independent quantitative verification (/qstack:verify). Builds non-
 ## Exit & Handoff
 - Semantic mismatch -> return to implementation (or `/qstack:why` if spec was ambiguous).
 - All green, budgets exceeded -> hand off to `/qstack:perf`.
-- All green, budgets met -> ready to ship/archive and mark `[x]` in `.qstack/roadmap.md`.
+- All green, budgets met -> mark the phase `done` with evidence in the intent file's `roadmap`; on a work board this evidence feeds the host check and review (Gate 2).

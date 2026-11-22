@@ -1,6 +1,6 @@
 # gaia — Quant Development Knowledge & `qstack` Plugin
 
-This repository manages **`qstack` (`v0.2.0`)**, a `pstack`-inspired, strict 3-Round Claude Code plugin and cross-harness skill stack for human-agent quantitative framework and strategy development.
+This repository manages **`qstack` (`v0.3.0`)**, a `pstack`-inspired, strict 3-Round Claude Code plugin and cross-harness skill stack for human-agent quantitative framework and strategy development.
 
 - Active plugin source: [`plugins/qstack/`](plugins/qstack/)
 - Marketplace manifest: [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json)
@@ -8,23 +8,25 @@ This repository manages **`qstack` (`v0.2.0`)**, a `pstack`-inspired, strict 3-R
 
 ## Strict 3-Round Workflow (`qstack`)
 
-1. **Round 1 — `/qstack:why <one-sentence need>`**:
-   - Auto-runs setup & triage (`Greenfield vs Brownfield`, task type, effort size).
-   - **Tiny one-off script**: fast-path plan -> execute -> test.
-   - **Medium+ task**: runs interactive `interview-me` (business type, engineering type, core mission) -> creates gitignored `.qstack/` scaffold with pre-filled `.qstack/intent.yaml` -> returns YAML to the human.
-2. **Round 2 — Iterative Refinement, Flexibility Review & `.qstack/roadmap.md`**:
-   - Human edits `.qstack/intent.yaml` freely (flexible semi-structured markup) or expands in prose -> agent updates & runs flexibility critique (`/qstack:interrogate`) to eliminate contradictions and future-rewrite hazards.
-   - With zero objections, agent generates `.qstack/roadmap.md` stating graph-level deliverables as **`CLI <-> Sub-path in Big Compute Graph`** (or direct node target for single-node tasks) and marks phases `[x]` in-place as they finish.
-3. **Round 3 — `/qstack:architect` (Skeleton First, ZERO Business Logic)**:
-   - Starts from **Data Models + Reusable Compute-Graph Routing**.
-   - **Greenfield**: presents Layout mapping core CLIs to graph sub-paths -> generates **fill-in-the-blank `.py` files with typed `class`/`function` stubs** -> **HARD STOP** for human review -> fills and verifies sub-path by sub-path (`/qstack:verify`, optional `/qstack:perf`).
-   - **Brownfield**: presents **existing Layout** -> annotates **① Add to graph / ② Rewire routing / ③ Polish without changing routing** -> **HARD STOP** for human review -> executes & marks `.qstack/roadmap.md`.
+1. **Round 1 — Triage & Interview (`/qstack:why <one-sentence need>`)**, run by the **intake owner** (a work board's coordinator before the task exists, or the agent itself):
+   - Triage by semantic risk, not size: an unconfirmed Red item, a public contract, a production/authority boundary, a new component or cross-package work makes a task **medium+**; everything else takes the **Fast Path** (plan -> execute -> test).
+   - Read-Before-Asking: the repo `AGENTS.md` + Project Policy Hook, earlier intent files, and the design sources the Hook names; then one bounded interview (recommended option first).
+2. **Round 2 — Interrogate & Confirm (Gate 1)**:
+   - Draft the intent from `templates/intent-envelope.yaml` + the matching body; every `/qstack:interrogate` finding is an objection the human closes as `answer` or `non_goal` (at most 2 question batches + 1 confirmation).
+   - The confirmed intent is committed as **`docs/intent/<task>.yaml`** (the Hook may name another folder); its `roadmap` section tracks phase progress. The builder works from it and the reviewer judges against it.
+3. **Round 3 — `/qstack:architect` (Skeleton First, ZERO Business Logic, Gate 1B)**: the builder's plan.
+   - **Greenfield**: Layout mapping core CLIs to graph sub-paths + exact typed stub files, written right after approval.
+   - **Brownfield**: existing Layout (or a delta on the repo's design sources) annotated **① Add / ② Rewire / ③ Polish**.
+   - **Ops**: production/authority-boundary requests and read-only audits of production systems or shared hosts go to `skills/mode/playbooks/ops-change.md` (runbook + rehearsal at Gate 1B, separate go/no-go before the production step).
+   - Then sub-path delivery with `/qstack:verify` (Gate 2) and optional `/qstack:perf` (Gate 3).
+
+On the herdr-projects board the Coordinator does Rounds 1–2 and the task's plan gate is Gate 1B: see [`docs/herdr-projects/qstack-coordinator.md`](docs/herdr-projects/qstack-coordinator.md).
 
 ## Slash Commands (`/qstack:<verb>`)
 
 | Command | Role | Hard Guardrail |
 | :--- | :--- | :--- |
-| `/qstack:why` | Primary entry (Round 1 + Round 2): auto-setup, triage, `interview-me`, gitignored `.qstack/intent.yaml` & `.qstack/roadmap.md` | Fast-paths tiny scripts; **zero business code** for medium+ tasks |
+| `/qstack:why` | Primary entry (Round 1 + Round 2): triage, Read-Before-Asking, bounded interview, confirmed `docs/intent/<task>.yaml` with `roadmap` | Fast-paths low-risk work; **zero business code**; every objection closed by the human |
 | `/qstack:architect` | Round 3 skeleton: Data Models, compute-graph routing, Greenfield fill-in-the-blank stubs / Brownfield 3-way Layout delta | **Zero concrete business logic**; stops at Gate 1B for human review |
 | `/qstack:mode` | Full-lifecycle orchestrator marching through Rounds 1 -> 2 -> 3 -> sub-path delivery & Harness selection | Stops at every Gate; loads only 1 matching playbook |
 | `/qstack:how` | Strictly read-only walkthrough producing existing Layout, compute graph & blast radius | Zero file edits |

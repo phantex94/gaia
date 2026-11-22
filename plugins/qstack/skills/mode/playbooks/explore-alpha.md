@@ -14,6 +14,6 @@ Use for rapid hypothesis falsification (single factor idea, model prototype, ad-
 - Keep code compact and `Math-First-Readability` so the human can audit and falsify fast.
 
 ## Ordered Steps
-1. `/qstack:why` (lightweight `.qstack/intent.yaml` confirmation) -> Gate 1.
+1. `/qstack:why` (lightweight intent confirmation; a research-only task keeps it in the task brief) -> Gate 1.
 2. Write clean Reference script/module + runtime YAML + future perturbation & oracle check.
 3. Report honest findings (including falsification). Promote to L2 via `evolve-boundary.md` only after the capability proves reusable (`>= 2` consumers) or moves toward live trading.
