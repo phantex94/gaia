@@ -7,6 +7,7 @@ import type { GraphEdge, GraphNode, Mode, View } from '../types'
 const PANE = 'compute-graph'
 const TITLE = 'Compute graph'
 const REFRESH_MS = 5000
+const RUN_TIMEOUT_MS = 15000
 const WRITE_TOOLS = ['Edit', 'Write', 'MultiEdit', 'NotebookEdit', 'Bash']
 const USAGE = 'Usage: /graph AMC-56 | /graph <repo folder> [--task name] | /graph sample | /graph (this folder)'
 const MARK: Record<Mode, string> = { '': ' ', add: '+', rewire: '~', polish: '*', remove: 'x' }
@@ -34,7 +35,7 @@ async function fetchView($: EngineInterface, picked: string): Promise<View> {
   let last = ''
   for (const run of runs) {
     try {
-      const { exitCode, stdout, stderr } = await $.process.run(run, cwd ? { cwd } : undefined)
+      const { exitCode, stdout, stderr } = await $.process.run(run, cwd ? { cwd, timeoutMs: RUN_TIMEOUT_MS } : { timeoutMs: RUN_TIMEOUT_MS })
       if (stdout.trim().startsWith('{')) return JSON.parse(stdout) as View
       last = stderr.trim() || `exit ${exitCode}`
     } catch (error) {
@@ -93,8 +94,12 @@ export const register: Register = on => {
     }
     const hasSlice = shown.slice === 'found'
     const outgoing = (node: GraphNode): GraphEdge[] => shown.edges.filter(edge => edge.from === node.id)
-    const axis = (node: GraphNode) =>
-      node.missing ? 'missing in graph.yaml' : `${node.axis.toUpperCase()}${node.group_by ? `(${node.group_by})` : ''}`
+    const stageIds = shown.stages.map(stage => stage.id)
+    const axis = (node: GraphNode) => {
+      if (node.missing) return 'missing in graph.yaml'
+      if (!stageIds.includes(node.stage)) return `stage ${node.stage || 'none'}?`
+      return `${(node.axis ?? '').toUpperCase()}${node.group_by ? `(${node.group_by})` : ''}`
+    }
     const row = (node: GraphNode) => (
       <Box flexDirection="column">
         <Text color={COLOR[node.mode]} dimColor={hasSlice && !node.mode} weight={node.mode ? 'bold' : 'regular'}>
@@ -107,7 +112,7 @@ export const register: Register = on => {
         ))}
       </Box>
     )
-    const lanes = [...shown.stages, { id: '', title: 'Missing in graph.yaml' }]
+    const lanes = [...shown.stages, { id: '', title: 'Not placed' }]
     return (
       <Box flexDirection="column">
         <Text weight="bold">{[shown.repo, shown.task].filter(Boolean).join(' · ')}</Text>
@@ -120,7 +125,7 @@ export const register: Register = on => {
         ))}
         {hasSlice && <Text dimColor>+ add  ~ rewire  * polish  ⇢ removed edge</Text>}
         {lanes.map(lane => {
-          const nodes = shown.nodes.filter(node => (lane.id ? node.stage === lane.id : node.missing))
+          const nodes = shown.nodes.filter(node => (lane.id ? node.stage === lane.id : !stageIds.includes(node.stage)))
           if (nodes.length === 0) return null
           return (
             <Box flexDirection="column" marginTop={1}>
@@ -134,7 +139,7 @@ export const register: Register = on => {
             <Text dimColor weight="bold">CLI ↔ SUB-PATH</Text>
             {shown.clis.map(cli => (
               <Text color={COLOR[cli.mode]} dimColor={hasSlice && !cli.mode}>
-                {`${MARK[cli.mode]} ${cli.command}: ${cli.path.join(' → ')}`}
+                {`${MARK[cli.mode]} ${cli.command}: ${(cli.path ?? []).join(' → ')}`}
               </Text>
             ))}
           </Box>

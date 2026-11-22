@@ -24,11 +24,11 @@ Two roles carry the rounds:
 1. Start strictly from **Data Models** + **Computational Graph Routing** so nodes are reusable across features/CLIs.
 2. **Greenfield**: Present **Layout** mapping core CLIs to sub-paths of the big compute graph + the exact **fill-in-the-blank `.py` stub files and typed signatures** -> **Gate 1B** -> write the stubs as the first build step, then fill **sub-path by sub-path**.
 3. **Brownfield**: Present **existing Layout & compute graph** (or the delta on the design source pages the Hook names) -> mark **① Add to graph**, **② Rewire routing**, or **③ Polish internals** per file/node -> **Gate 1B**.
-4. Refine the intent file's `roadmap` into `CLI <-> Sub-path` (graph tasks) or node contracts (single-node tasks). Gate 1B lands on the host's plan gate when there is one.
+4. Refine the intent file's `roadmap` into `CLI <-> Sub-path` (graph tasks) or node contracts (single-node tasks). Gate 1B lands on the host's plan gate when there is one. Graph tasks also fill `graph_slice` against the repo's `graph.yaml` (`01` §4).
 5. **Ops routing**: a request that crosses the production/authority boundary (triage rule 3), or a read-only audit of a production system or shared host, routes to `skills/mode/playbooks/ops-change.md` with `templates/ops-change.yaml` instead of the code skeleton; a non-production code change keeps its own playbook even if it ships through a release (variants: incident, release/cutover, live change, read-only audit). Gate 1B then reviews the runbook and rehearsal plan; host inventory is measured by the builder after it starts, never asked at intake.
 
 ### Intent File Lifecycle
-Envelope fields shared by every intent template: `task`, `status`, `confirmed`, `sources`, `objections`, `decisions`, `roadmap`.
+Envelope fields shared by every intent template: `task`, `status`, `confirmed`, `sources`, `objections`, `decisions`, `roadmap`, and `graph_slice` for graph tasks (filled in Round 3; `01` §4).
 `confirmed` (intake) -> `building` (builder's first commit after Gate 1B, confirmed fields copied unchanged) -> roadmap phases marked `done` with evidence -> `delivered` (last commit; the file merges with the work). A later change is a new task with a new file and `supersedes:`. Red answers given mid-build are appended to `decisions` with their date.
 
 ### Gate Map

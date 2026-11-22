@@ -1,6 +1,8 @@
 """Checks for compute_graph.py on the sample and on broken copies: uv run --with pyyaml python -m unittest."""
 
+import json
 import shutil
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -54,6 +56,60 @@ class SampleTest(unittest.TestCase):
     def test_page_names_the_task(self):
         page = cg.render_html(cg.build_view(str(self.repo), "smp-1"))
         self.assertTrue(page.startswith("<title>Compute graph SMP-1</title>"))
+
+    def test_malformed_files_become_errors(self):
+        (self.intent / "graph.yaml").write_text("nodes: [\n")
+        view = cg.build_view(str(self.repo), "smp-1")
+        self.assertIn("not valid YAML", view["errors"][0])
+        cg.render_html(view)
+
+    def test_missing_fields_and_unknown_stage_are_shown(self):
+        (self.intent / "graph.yaml").write_text(
+            "nodes:\n  - { stage: data, axis: ts }\n  - { id: odd_node, stage: signal }\n  - plain text\n"
+            "clis:\n  - { command: cta x }\n")
+        view = cg.build_view(str(self.repo), "")
+        errors = " | ".join(view["errors"])
+        for expected in ("nodes[0] has no id", "stage 'signal'", "nodes[2] is not a mapping"):
+            self.assertIn(expected, errors)
+        self.assertIn("odd_node", [n["id"] for n in cg.node_rows(view)["missing"]])
+        self.assertIn("odd_node", cg.render_html(view))
+
+
+class BoardTest(unittest.TestCase):
+    """A board task whose files exist only on its branch, in a folder the Hook names."""
+
+    def setUp(self):
+        self.top = Path(tempfile.mkdtemp())
+        repo, board = self.top / "repo", self.top / "board"
+        folder = repo / "plan" / "intent"
+        folder.mkdir(parents=True)
+        run = lambda *args: subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True)
+        run("init", "-q", "-b", "main")
+        (repo / "AGENTS.md").write_text("- Intent folder: `plan/intent/`; file name: key-n-slug.yaml\n")
+        run("add", "-A")
+        run("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "hook")
+        run("checkout", "-q", "-b", "work/7-carry")
+        shutil.copy(SAMPLE / "docs/intent/graph.yaml", folder / "graph.yaml")
+        intent = (SAMPLE / "docs/intent/smp-1-carry-factor.yaml").read_text().replace("smp-1-carry-factor", "rpo-7-carry")
+        (folder / "rpo-7-carry.yaml").write_text(intent)
+        run("add", "-A")
+        run("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "intent")
+        run("checkout", "-q", "main")
+        (board / "tasks" / "repo" / "7").mkdir(parents=True)
+        (board / "repo-keys.json").write_text(json.dumps({"had": {"RPO": "repo"}}))
+        (board / "repos.json").write_text(json.dumps({"repo": str(repo)}))
+        task = {"root": str(repo), "branch": "work/7-carry", "worktree": str(self.top / "gone")}
+        (board / "tasks" / "repo" / "7" / "task.json").write_text(json.dumps(task))
+        self.saved, cg.BOARD_DATA = cg.BOARD_DATA, board
+
+    def tearDown(self):
+        cg.BOARD_DATA = self.saved
+        shutil.rmtree(self.top)
+
+    def test_board_id_reads_the_branch(self):
+        view = cg.build_view("rpo-7")
+        self.assertEqual((view["task"], view["source"], view["slice"]), ("RPO-7", "branch work/7-carry", "found"))
+        self.assertEqual(view["intent_file"], "plan/intent/rpo-7-carry.yaml")
 
 
 if __name__ == "__main__":

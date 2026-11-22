@@ -1,5 +1,5 @@
 import type { CommandRunInput } from 'claude-code'
-import { expect, test } from 'claude-code/testing'
+import { expect, mock, test } from 'claude-code/testing'
 
 const PANE = {
   plugin: 'compute-graph',
@@ -61,13 +61,15 @@ function graph(args: string): CommandRunInput {
   return { command: 'graph', args } as CommandRunInput
 }
 
-function engine(on: any, shown: object, seen: string[][]) {
+function engine(on: any, shown: object | (() => object), seen: string[][]) {
   on('command.register', () => ({ value: { command: 'graph' } }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
   on('session.start', (_: unknown, e: { cwd: string }) => ({ cwd: e.cwd }))
+  on('tool.call', () => ({ result: {} }))
   on('process.run', (_: unknown, e: { argv: string[] }) => {
     seen.push(e.argv)
-    return { value: { exitCode: 0, stdout: JSON.stringify(shown), stderr: '' } }
+    const now = typeof shown === 'function' ? shown() : shown
+    return { value: { exitCode: 0, stdout: JSON.stringify(now), stderr: '' } }
   })
 }
 
@@ -105,5 +107,25 @@ test('a task without an intent file shows the repo graph and says it has no slic
 test('before /graph the pane says how to pick a task', async $ => {
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect((await ui.find({ type: 'Text' }))?.text).toContain('Usage: /graph AMC-56')
+  await ui.unmount()
+})
+
+test('the pane follows the files: after an edit and on the 5 s poll', async ($, on) => {
+  let shown: object = SLICED
+  const clock = mock.clock(on)
+  engine(on, () => shown, [])
+  await $.session.start({ cwd: '/repo', surface: 'terminal', isInteractive: true })
+  await $.command.run(graph('sample'))
+
+  shown = { ...SLICED, nodes: [...SLICED.nodes, { id: 'vol_scale', stage: 'model', axis: 'cs', mode: 'add' }] }
+  await $.tool.call({ tool: 'Edit', file_path: '/repo/docs/intent/graph.yaml', old_string: 'a', new_string: 'b' })
+  let ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect((await ui.find({ type: 'Text', text: /vol_scale/ }))?.text).toBe('+ vol_scale  CS')
+  await ui.unmount()
+
+  shown = { ...SLICED, nodes: [...SLICED.nodes, { id: 'odd_node', stage: 'signal', axis: 'ts', mode: '' }] }
+  await clock.advance(5000)
+  ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect((await ui.find({ type: 'Text', text: /odd_node/ }))?.text).toBe('  odd_node  stage signal?')
   await ui.unmount()
 })

@@ -54,7 +54,7 @@ class Source:
         self.kind, self.root, self.branch = kind, Path(root), branch
 
     def label(self):
-        return f"branch {self.branch}" if self.kind == "branch" else f"{self.kind} {self.root}"
+        return f"branch {self.branch}" if self.kind == "branch" else f"{self.kind} {self.root.name}"
 
     def read(self, rel):
         if self.kind == "branch":
@@ -147,14 +147,66 @@ def intent_folder(source):
     return (found.group(1) if found else DEFAULT_INTENT_FOLDER).strip("/")
 
 
-def find_intent(source, folder, task):
+def parse(text, where, errors):
+    """YAML text as a dict, or None with the reason added to errors."""
+    try:
+        data = yaml.safe_load(text)
+    except yaml.YAMLError as error:
+        errors.append(f"{where} is not valid YAML: {str(error).splitlines()[0]}")
+        return None
+    if data is not None and not isinstance(data, dict):
+        errors.append(f"{where} is not a mapping")
+        return None
+    return data
+
+
+def as_list(value):
+    return value if isinstance(value, list) else []
+
+
+def clean_graph(raw, errors):
+    """The graph's three lists with every field the views read present; bad entries reported."""
+    graph = {"nodes": [], "edges": [], "clis": []}
+    for key in graph:
+        for k, item in enumerate(as_list(raw.get(key))):
+            if not isinstance(item, dict):
+                errors.append(f"{key}[{k}] is not a mapping")
+                continue
+            graph[key].append(item)
+    for k, node in enumerate(graph["nodes"]):
+        if not node.get("id"):
+            errors.append(f"nodes[{k}] has no id")
+        graph["nodes"][k] = {**node, "id": str(node.get("id") or f"nodes[{k}]"), "stage": str(node.get("stage") or ""),
+                             "axis": str(node.get("axis") or ""), "inputs": as_list(node.get("inputs")),
+                             "outputs": as_list(node.get("outputs"))}
+    graph["edges"] = [{**e, "from": str(e.get("from") or ""), "to": str(e.get("to") or "")} for e in graph["edges"]]
+    graph["clis"] = [{**c, "command": str(c.get("command") or ""), "path": [str(p) for p in as_list(c.get("path"))]}
+                     for c in graph["clis"]]
+    return graph
+
+
+def clean_slice(raw, errors):
+    """graph_slice entries as mappings with string fields; bad entries reported."""
+    slice_ = {}
+    for key in ("nodes", "edges", "clis"):
+        items = []
+        for k, item in enumerate(as_list(raw.get(key))):
+            if isinstance(item, dict):
+                items.append({f: str(v) for f, v in item.items()})
+            else:
+                errors.append(f"graph_slice.{key}[{k}] is not a mapping")
+        slice_[key] = items
+    return slice_
+
+
+def find_intent(source, folder, task, errors):
     """Intent files whose name and task: field both start with the task name."""
     picks = []
     for name in source.names(folder):
         stem = name.lower().removesuffix(".yaml")
         if name == GRAPH_FILE or not name.endswith(".yaml") or not (stem == task or stem.startswith(task + "-")):
             continue
-        data = yaml.safe_load(source.read(f"{folder}/{name}") or "") or {}
+        data = parse(source.read(f"{folder}/{name}") or "", f"{folder}/{name}", errors) or {}
         field = str(data.get("task", "")).lower()
         if field == task or field.startswith(task + "-"):
             picks.append((name, data))
@@ -240,20 +292,21 @@ def build_view(target, task_name=""):
     source, repo, task, label = resolve(target, task_name)
     folder = intent_folder(source)
     graph_path = f"{folder}/{GRAPH_FILE}"
-    raw = yaml.safe_load(source.read(graph_path) or "null")
     errors, notes = [], []
+    text = source.read(graph_path)
+    raw = parse(text, graph_path, errors) if text is not None else None
     graph = {"nodes": [], "edges": [], "clis": []}
-    if raw is None:
+    if text is None:
         notes.append(NO_GRAPH.format(path=graph_path))
-    else:
-        graph.update({k: list(raw.get(k) or []) for k in ("nodes", "edges", "clis")})
+    elif raw is not None:
+        graph = clean_graph(raw, errors)
         repo = raw.get("repo") or repo
         check_graph(graph, errors)
     slice_, slice_state, intent_name = {}, "none", ""
     if not task:
         notes.append(NO_TASK)
     else:
-        picks = find_intent(source, folder, task)
+        picks = find_intent(source, folder, task, errors)
         if not picks:
             notes.append(NO_INTENT.format(task=label, folder=folder))
         elif len(picks) > 1:
@@ -261,8 +314,10 @@ def build_view(target, task_name=""):
             slice_state = "ambiguous"
         else:
             intent_name, data = picks[0]
-            slice_ = data.get("graph_slice") or {}
-            if not slice_:
+            raw_slice = data.get("graph_slice")
+            slice_ = clean_slice(raw_slice, errors) if isinstance(raw_slice, dict) else {}
+            if not any(slice_.values()):
+                slice_ = {}
                 notes.append(NO_SLICE.format(task=label))
             else:
                 slice_state = "found"
@@ -357,15 +412,17 @@ NODE_W, NODE_H, GAP_Y, LANE_W, TOP = 168, 46, 16, 196, 34
 
 
 def node_rows(view):
-    """Nodes grouped by stage in file order; missing slice ids go last in their own row."""
+    """Nodes grouped by stage in file order; nodes no stage lane takes go last, in their own lane."""
     rows = {s: [n for n in view["nodes"] if n.get("stage") == s] for s in STAGES}
-    rows["missing"] = [n for n in view["nodes"] if n.get("missing")]
+    rows["missing"] = [n for n in view["nodes"] if n.get("stage") not in STAGES]
     return rows
 
 
 def axis_text(node):
     if node.get("missing"):
         return "missing in graph.yaml"
+    if node.get("stage") not in STAGES:
+        return f"stage {node.get('stage') or 'none'}?"
     axis = (node.get("axis") or "").upper()
     return f"{axis}({node['group_by']})" if node.get("group_by") else axis
 
@@ -411,7 +468,7 @@ def svg_wide(view, has_slice):
     spot, parts = {}, []
     for i, lane in enumerate(lanes):
         x = 8 + i * LANE_W
-        title = STAGE_TITLES.get(lane, "Missing")
+        title = STAGE_TITLES.get(lane, "Not placed")
         parts.append(f'<rect class="lane" x="{x}" y="6" width="{LANE_W - 10}" height="{height - 12}" rx="4"/>'
                      f'<text class="lane-title" x="{x + 10}" y="24">{title}</text>')
         for j, node in enumerate(rows[lane]):
@@ -431,7 +488,7 @@ def svg_narrow(view, has_slice):
         lines = (count + per_row - 1) // per_row
         lane_h = 26 + lines * (NODE_H + GAP_Y)
         parts.append(f'<rect class="lane" x="4" y="{y}" width="{width - 8}" height="{lane_h}" rx="4"/>'
-                     f'<text class="lane-title" x="14" y="{y + 18}">{STAGE_TITLES.get(lane, "Missing")}</text>')
+                     f'<text class="lane-title" x="14" y="{y + 18}">{STAGE_TITLES.get(lane, "Not placed")}</text>')
         for j, node in enumerate(rows[lane]):
             spot[node["id"]] = (14 + (j % per_row) * (NODE_W + 12), y + 28 + (j // per_row) * (NODE_H + GAP_Y))
         y += lane_h + 22
