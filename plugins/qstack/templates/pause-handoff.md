@@ -11,7 +11,7 @@
 - `<item + what remains unverified>`
 
 ## Open Decisions & Blockers (Human-Owned / Co-Designed)
-- `<explicit question or blocker>`
+- `<explicit question or blocker; existing decision-request id/version, exact target revision/wait, owner, delivery receipt or uncertainty if applicable>`
 
 ## Next Executable Action
 - `<exact /qstack:<verb> or CLI command to resume cleanly>`

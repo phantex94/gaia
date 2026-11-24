@@ -10,7 +10,7 @@
     {
       "name": "qstack",
       "source": "./plugins/qstack",
-      "description": "Disciplined human-agent co-development stack for quant systems: /qstack:why strict Round 1-2 intake & roadmap, /qstack:architect Round 3 data-model & compute-graph skeleton, /qstack:verify PIT/Batch=Step/Embargo verification, and /qstack:perf readability-preserving optimization."
+      "description": "Disciplined human-agent co-development stack for quant systems: /qstack:why strict Round 1-2 intake & roadmap, /qstack:architect Round 3 data-model & compute-graph skeleton, /qstack:verify PIT/Batch=Step/Embargo verification, and /qstack:perf readability-preserving optimization. /qstack:attention adds advisory cross-task human decision scheduling."
     },
     {
       "name": "compute-graph",

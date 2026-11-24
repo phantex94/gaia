@@ -1,0 +1,31 @@
+# Advisory attention request; never a runnable task or an approval.
+# All fields are observations or explicitly labelled estimates.
+id: "<readable request id>"
+version: "<readable request revision>"
+kind: semantic # intent | semantic | design | gate1 | plan | merge | permission | auth | failure | pick | unknown
+owner: "<actual decision owner>"
+mode: medium # medium | fast; fast MUST omit ambiguity and intake_id
+severity: red # red | yellow | green | authority
+required: true
+status: pending # pending | answered | closed; closed only after observed resolution
+observed: false
+question: "<exact question or gate request>"
+options: ["<choice 1>", "<choice 2>"] # unknown may be []; preserve exact choices
+target:
+  machine: "<machine>"
+  project: "<repo>"
+  task: "<task key or readable pre-intake draft id>"
+  phase: "<stage>"
+  revision: "<exact intent/plan/PR revision or readable draft version>"
+  wait_token: "<readable snapshot label bound to exact observed waiting object>"
+intake_id: null # required for intent/gate1, otherwise omit or null
+created_min: 0 # same explicit time origin as snapshot now_min; fill from observation
+deadline_min: null
+urgent: false
+critical: false
+depends_on: [] # decision request ids, not board task ids
+evsi: null # expected rework reduction, common cost unit
+delay_min: null # marginal project completion delay estimate, minutes
+human_cost: null # same cost unit as evsi
+share: null # or {verified: true, scope: "...", key: "...", revision: "...", evidence: "..."} only after applicability verified
+# ambiguity: {score: null, score_range: [0, 100], calibrated: false} # applicable Medium+ checkpoints only

@@ -15,3 +15,5 @@ description: Cold-start safe handoff checkpoint (/qstack:pause). Persists exact 
    - Unresolved Red/Yellow decisions or external blockers;
    - Exact next `/qstack:<verb>` or CLI command to run on resume.
 3. Write the handoff note to the host's handoff file when it names one (e.g. a work board's closing note), else `docs/tasks/<task>-handoff.md`, and confirm no background/remote side effects are left in an ambiguous state.
+
+For a real human-decision wait, preserve the current request ID/version, exact question/options, target revision/wait identity, outstanding authorization and any uncertain delivery receipt in the existing handoff record. Re-read host state before resume. On Herdr, the actual native blocked report must be issued before ending the waiting turn; a handoff note alone does not block the finish pipeline. Do not add an ambiguity score/ledger to Fast Path.

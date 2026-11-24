@@ -1,7 +1,7 @@
 {
   "name": "qstack",
-  "version": "0.4.0",
-  "description": "Quant Development Brain skill stack (v0.4): Round 1-2 intake (triage by semantic risk, Read-Before-Asking, bounded interview, every objection closed as answer or non-goal) -> confirmed intent committed as docs/intent/<task>.yaml -> Round 3 (data-model & compute-graph skeleton or delta, as the host's plan gate) before any business logic; Round 3 also fills the task's graph_slice against the repo's docs/intent/graph.yaml.",
+  "version": "0.5.0",
+  "description": "Quant Development Brain skill stack (v0.5): strict three-round development, quantified Medium+ intent clarification, intentionally unscored Fast Path, and coordinator-only human attention scheduling with native approval gates.",
   "author": {
     "name": "Quant Development Team"
   }

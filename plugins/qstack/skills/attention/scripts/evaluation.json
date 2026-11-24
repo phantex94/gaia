@@ -1,0 +1,676 @@
+{
+  "execution": "V8 isolate; exact pure scheduler functions and test bodies used to generate source; Node CLI and live host not exercised",
+  "tests": [
+    {
+      "name": "same verified scope merges",
+      "pass": true
+    },
+    {
+      "name": "different scope separate",
+      "pass": true
+    },
+    {
+      "name": "conflicting options block",
+      "pass": true
+    },
+    {
+      "name": "unverified reuse separate",
+      "pass": true
+    },
+    {
+      "name": "approvals never merge",
+      "pass": true
+    },
+    {
+      "name": "urgent then critical then ordinary",
+      "pass": true
+    },
+    {
+      "name": "expired deadline becomes urgent",
+      "pass": true
+    },
+    {
+      "name": "aging promotes mandatory",
+      "pass": true
+    },
+    {
+      "name": "mandatory not dropped for negative value",
+      "pass": true
+    },
+    {
+      "name": "negative optional deferred",
+      "pass": true
+    },
+    {
+      "name": "unknown optional deferred",
+      "pass": true
+    },
+    {
+      "name": "unknown mandatory shown",
+      "pass": true
+    },
+    {
+      "name": "fast semantic blocked and no score",
+      "pass": true
+    },
+    {
+      "name": "fast permission visible unscored",
+      "pass": true
+    },
+    {
+      "name": "duplicate ids rejected",
+      "pass": true
+    },
+    {
+      "name": "unknown dependency blocked",
+      "pass": true
+    },
+    {
+      "name": "closed dependency unlocks",
+      "pass": true
+    },
+    {
+      "name": "unverified and future blocked",
+      "pass": true
+    },
+    {
+      "name": "intake exhausted blocks",
+      "pass": true
+    },
+    {
+      "name": "batch cap and intake count",
+      "pass": true
+    },
+    {
+      "name": "open Red prevents Gate1",
+      "pass": true
+    },
+    {
+      "name": "ready confirmation separate after budget",
+      "pass": true
+    },
+    {
+      "name": "different owners separate",
+      "pass": true
+    },
+    {
+      "name": "valid human answer candidate only",
+      "pass": true
+    },
+    {
+      "name": "autopilot or vague yes rejected",
+      "pass": true
+    },
+    {
+      "name": "stale revision or wait rejected",
+      "pass": true
+    },
+    {
+      "name": "wrong machine or recipient rejected",
+      "pass": true
+    },
+    {
+      "name": "changed options rejects",
+      "pass": true
+    },
+    {
+      "name": "duplicate receipt rejected",
+      "pass": true
+    },
+    {
+      "name": "closed cannot receive reply",
+      "pass": true
+    },
+    {
+      "name": "invalid choice rejected",
+      "pass": true
+    },
+    {
+      "name": "plan merge manual native review",
+      "pass": true
+    },
+    {
+      "name": "permission auth failure pick manual",
+      "pass": true
+    },
+    {
+      "name": "decline holds",
+      "pass": true
+    },
+    {
+      "name": "Gate1 record only",
+      "pass": true
+    },
+    {
+      "name": "optional authority refused",
+      "pass": true
+    },
+    {
+      "name": "changed permission class refused",
+      "pass": true
+    }
+  ],
+  "benchmark": {
+    "assumptions": "12 synthetic scenarios; mandatory answerable requests; 2 min batch overhead + 1 min/question; fixed on 10-min grid; no cross-owner batch; priority/adaptive event-driven, priority disables grouping; project finish=max(answer time + independent tail); no actual LLM or Herdr",
+    "rows": [
+      {
+        "scenario": "shared contract burst",
+        "policy": "immediate",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 17,
+        "project_finish_min": 96,
+        "answered": 3
+      },
+      {
+        "scenario": "shared contract burst",
+        "policy": "fixed",
+        "batches": 2,
+        "questions": 3,
+        "human_minutes": 7,
+        "decision_wait_minutes": 20,
+        "project_finish_min": 94,
+        "answered": 3
+      },
+      {
+        "scenario": "shared contract burst",
+        "policy": "priority",
+        "batches": 2,
+        "questions": 3,
+        "human_minutes": 7,
+        "decision_wait_minutes": 14,
+        "project_finish_min": 94,
+        "answered": 3
+      },
+      {
+        "scenario": "shared contract burst",
+        "policy": "adaptive",
+        "batches": 2,
+        "questions": 2,
+        "human_minutes": 6,
+        "decision_wait_minutes": 11,
+        "project_finish_min": 93,
+        "answered": 3
+      },
+      {
+        "scenario": "staggered same scope",
+        "policy": "immediate",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 11,
+        "project_finish_min": 66,
+        "answered": 3
+      },
+      {
+        "scenario": "staggered same scope",
+        "policy": "fixed",
+        "batches": 2,
+        "questions": 3,
+        "human_minutes": 7,
+        "decision_wait_minutes": 24,
+        "project_finish_min": 74,
+        "answered": 3
+      },
+      {
+        "scenario": "staggered same scope",
+        "policy": "priority",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 11,
+        "project_finish_min": 66,
+        "answered": 3
+      },
+      {
+        "scenario": "staggered same scope",
+        "policy": "adaptive",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 11,
+        "project_finish_min": 66,
+        "answered": 3
+      },
+      {
+        "scenario": "different scopes",
+        "policy": "immediate",
+        "batches": 2,
+        "questions": 2,
+        "human_minutes": 6,
+        "decision_wait_minutes": 9,
+        "project_finish_min": 66,
+        "answered": 2
+      },
+      {
+        "scenario": "different scopes",
+        "policy": "fixed",
+        "batches": 1,
+        "questions": 2,
+        "human_minutes": 4,
+        "decision_wait_minutes": 8,
+        "project_finish_min": 64,
+        "answered": 2
+      },
+      {
+        "scenario": "different scopes",
+        "policy": "priority",
+        "batches": 1,
+        "questions": 2,
+        "human_minutes": 4,
+        "decision_wait_minutes": 8,
+        "project_finish_min": 64,
+        "answered": 2
+      },
+      {
+        "scenario": "different scopes",
+        "policy": "adaptive",
+        "batches": 1,
+        "questions": 2,
+        "human_minutes": 4,
+        "decision_wait_minutes": 8,
+        "project_finish_min": 64,
+        "answered": 2
+      },
+      {
+        "scenario": "urgent permission",
+        "policy": "immediate",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 18,
+        "project_finish_min": 96,
+        "answered": 3
+      },
+      {
+        "scenario": "urgent permission",
+        "policy": "fixed",
+        "batches": 1,
+        "questions": 3,
+        "human_minutes": 5,
+        "decision_wait_minutes": 15,
+        "project_finish_min": 95,
+        "answered": 3
+      },
+      {
+        "scenario": "urgent permission",
+        "policy": "priority",
+        "batches": 1,
+        "questions": 3,
+        "human_minutes": 5,
+        "decision_wait_minutes": 15,
+        "project_finish_min": 95,
+        "answered": 3
+      },
+      {
+        "scenario": "urgent permission",
+        "policy": "adaptive",
+        "batches": 1,
+        "questions": 3,
+        "human_minutes": 5,
+        "decision_wait_minutes": 15,
+        "project_finish_min": 95,
+        "answered": 3
+      },
+      {
+        "scenario": "human offline",
+        "policy": "immediate",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 76,
+        "project_finish_min": 124,
+        "answered": 3
+      },
+      {
+        "scenario": "human offline",
+        "policy": "fixed",
+        "batches": 1,
+        "questions": 3,
+        "human_minutes": 5,
+        "decision_wait_minutes": 88,
+        "project_finish_min": 125,
+        "answered": 3
+      },
+      {
+        "scenario": "human offline",
+        "policy": "priority",
+        "batches": 1,
+        "questions": 3,
+        "human_minutes": 5,
+        "decision_wait_minutes": 73,
+        "project_finish_min": 120,
+        "answered": 3
+      },
+      {
+        "scenario": "human offline",
+        "policy": "adaptive",
+        "batches": 1,
+        "questions": 2,
+        "human_minutes": 4,
+        "decision_wait_minutes": 70,
+        "project_finish_min": 119,
+        "answered": 3
+      },
+      {
+        "scenario": "late critical",
+        "policy": "immediate",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 15,
+        "project_finish_min": 129,
+        "answered": 3
+      },
+      {
+        "scenario": "late critical",
+        "policy": "fixed",
+        "batches": 2,
+        "questions": 3,
+        "human_minutes": 7,
+        "decision_wait_minutes": 28,
+        "project_finish_min": 134,
+        "answered": 3
+      },
+      {
+        "scenario": "late critical",
+        "policy": "priority",
+        "batches": 2,
+        "questions": 3,
+        "human_minutes": 7,
+        "decision_wait_minutes": 14,
+        "project_finish_min": 127,
+        "answered": 3
+      },
+      {
+        "scenario": "late critical",
+        "policy": "adaptive",
+        "batches": 2,
+        "questions": 3,
+        "human_minutes": 7,
+        "decision_wait_minutes": 14,
+        "project_finish_min": 127,
+        "answered": 3
+      },
+      {
+        "scenario": "independent approvals",
+        "policy": "immediate",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 18,
+        "project_finish_min": 63,
+        "answered": 3
+      },
+      {
+        "scenario": "independent approvals",
+        "policy": "fixed",
+        "batches": 1,
+        "questions": 3,
+        "human_minutes": 5,
+        "decision_wait_minutes": 15,
+        "project_finish_min": 65,
+        "answered": 3
+      },
+      {
+        "scenario": "independent approvals",
+        "policy": "priority",
+        "batches": 1,
+        "questions": 3,
+        "human_minutes": 5,
+        "decision_wait_minutes": 15,
+        "project_finish_min": 65,
+        "answered": 3
+      },
+      {
+        "scenario": "independent approvals",
+        "policy": "adaptive",
+        "batches": 1,
+        "questions": 3,
+        "human_minutes": 5,
+        "decision_wait_minutes": 15,
+        "project_finish_min": 65,
+        "answered": 3
+      },
+      {
+        "scenario": "eight decisions",
+        "policy": "immediate",
+        "batches": 8,
+        "questions": 8,
+        "human_minutes": 24,
+        "decision_wait_minutes": 108,
+        "project_finish_min": 94,
+        "answered": 8
+      },
+      {
+        "scenario": "eight decisions",
+        "policy": "fixed",
+        "batches": 2,
+        "questions": 8,
+        "human_minutes": 12,
+        "decision_wait_minutes": 88,
+        "project_finish_min": 86,
+        "answered": 8
+      },
+      {
+        "scenario": "eight decisions",
+        "policy": "priority",
+        "batches": 2,
+        "questions": 8,
+        "human_minutes": 12,
+        "decision_wait_minutes": 72,
+        "project_finish_min": 76,
+        "answered": 8
+      },
+      {
+        "scenario": "eight decisions",
+        "policy": "adaptive",
+        "batches": 2,
+        "questions": 8,
+        "human_minutes": 12,
+        "decision_wait_minutes": 72,
+        "project_finish_min": 76,
+        "answered": 8
+      },
+      {
+        "scenario": "single urgent",
+        "policy": "immediate",
+        "batches": 1,
+        "questions": 1,
+        "human_minutes": 3,
+        "decision_wait_minutes": 3,
+        "project_finish_min": 84,
+        "answered": 1
+      },
+      {
+        "scenario": "single urgent",
+        "policy": "fixed",
+        "batches": 1,
+        "questions": 1,
+        "human_minutes": 3,
+        "decision_wait_minutes": 12,
+        "project_finish_min": 93,
+        "answered": 1
+      },
+      {
+        "scenario": "single urgent",
+        "policy": "priority",
+        "batches": 1,
+        "questions": 1,
+        "human_minutes": 3,
+        "decision_wait_minutes": 3,
+        "project_finish_min": 84,
+        "answered": 1
+      },
+      {
+        "scenario": "single urgent",
+        "policy": "adaptive",
+        "batches": 1,
+        "questions": 1,
+        "human_minutes": 3,
+        "decision_wait_minutes": 3,
+        "project_finish_min": 84,
+        "answered": 1
+      },
+      {
+        "scenario": "two owners",
+        "policy": "immediate",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 18,
+        "project_finish_min": 66,
+        "answered": 3
+      },
+      {
+        "scenario": "two owners",
+        "policy": "fixed",
+        "batches": 2,
+        "questions": 3,
+        "human_minutes": 7,
+        "decision_wait_minutes": 21,
+        "project_finish_min": 73,
+        "answered": 3
+      },
+      {
+        "scenario": "two owners",
+        "policy": "priority",
+        "batches": 2,
+        "questions": 3,
+        "human_minutes": 7,
+        "decision_wait_minutes": 17,
+        "project_finish_min": 63,
+        "answered": 3
+      },
+      {
+        "scenario": "two owners",
+        "policy": "adaptive",
+        "batches": 2,
+        "questions": 3,
+        "human_minutes": 7,
+        "decision_wait_minutes": 17,
+        "project_finish_min": 63,
+        "answered": 3
+      },
+      {
+        "scenario": "long offline shared",
+        "policy": "immediate",
+        "batches": 6,
+        "questions": 6,
+        "human_minutes": 18,
+        "decision_wait_minutes": 258,
+        "project_finish_min": 143,
+        "answered": 6
+      },
+      {
+        "scenario": "long offline shared",
+        "policy": "fixed",
+        "batches": 2,
+        "questions": 6,
+        "human_minutes": 10,
+        "decision_wait_minutes": 277,
+        "project_finish_min": 144,
+        "answered": 6
+      },
+      {
+        "scenario": "long offline shared",
+        "policy": "priority",
+        "batches": 2,
+        "questions": 6,
+        "human_minutes": 10,
+        "decision_wait_minutes": 239,
+        "project_finish_min": 131,
+        "answered": 6
+      },
+      {
+        "scenario": "long offline shared",
+        "policy": "adaptive",
+        "batches": 1,
+        "questions": 3,
+        "human_minutes": 5,
+        "decision_wait_minutes": 225,
+        "project_finish_min": 130,
+        "answered": 6
+      },
+      {
+        "scenario": "sparse arrivals",
+        "policy": "immediate",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 9,
+        "project_finish_min": 81,
+        "answered": 3
+      },
+      {
+        "scenario": "sparse arrivals",
+        "policy": "fixed",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 26,
+        "project_finish_min": 83,
+        "answered": 3
+      },
+      {
+        "scenario": "sparse arrivals",
+        "policy": "priority",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 9,
+        "project_finish_min": 81,
+        "answered": 3
+      },
+      {
+        "scenario": "sparse arrivals",
+        "policy": "adaptive",
+        "batches": 3,
+        "questions": 3,
+        "human_minutes": 9,
+        "decision_wait_minutes": 9,
+        "project_finish_min": 81,
+        "answered": 3
+      }
+    ],
+    "totals": [
+      {
+        "policy": "immediate",
+        "batches": 41,
+        "questions": 41,
+        "human_minutes": 123,
+        "decision_wait_minutes": 560,
+        "project_finish_min": 1108,
+        "answered": 41
+      },
+      {
+        "policy": "fixed",
+        "batches": 20,
+        "questions": 41,
+        "human_minutes": 81,
+        "decision_wait_minutes": 622,
+        "project_finish_min": 1130,
+        "answered": 41
+      },
+      {
+        "policy": "priority",
+        "batches": 21,
+        "questions": 41,
+        "human_minutes": 83,
+        "decision_wait_minutes": 490,
+        "project_finish_min": 1066,
+        "answered": 41
+      },
+      {
+        "policy": "adaptive",
+        "batches": 20,
+        "questions": 36,
+        "human_minutes": 76,
+        "decision_wait_minutes": 470,
+        "project_finish_min": 1063,
+        "answered": 41
+      }
+    ]
+  }
+}

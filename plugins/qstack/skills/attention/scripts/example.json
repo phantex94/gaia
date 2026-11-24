@@ -1,0 +1,151 @@
+{
+  "requests": [
+    {
+      "id": "ridge-label",
+      "version": "v1",
+      "kind": "semantic",
+      "owner": "human",
+      "mode": "medium",
+      "severity": "red",
+      "required": true,
+      "status": "pending",
+      "observed": true,
+      "question": "Choose label horizon",
+      "options": [
+        "5d",
+        "10d"
+      ],
+      "target": {
+        "machine": "mac",
+        "project": "alpha",
+        "task": "ridge-label",
+        "phase": "build",
+        "revision": "intent-v1",
+        "wait_token": "wait-1"
+      },
+      "created_min": 0,
+      "deadline_min": null,
+      "urgent": false,
+      "critical": true,
+      "depends_on": [],
+      "evsi": 10,
+      "delay_min": 5,
+      "human_cost": 1,
+      "share": {
+        "verified": true,
+        "scope": "alpha-model-contract",
+        "key": "label",
+        "revision": "v1",
+        "evidence": "ADR-12-v1"
+      }
+    },
+    {
+      "id": "catboost-label",
+      "version": "v1",
+      "kind": "semantic",
+      "owner": "human",
+      "mode": "medium",
+      "severity": "red",
+      "required": true,
+      "status": "pending",
+      "observed": true,
+      "question": "Choose label horizon",
+      "options": [
+        "5d",
+        "10d"
+      ],
+      "target": {
+        "machine": "mac",
+        "project": "alpha",
+        "task": "catboost-label",
+        "phase": "build",
+        "revision": "intent-v1",
+        "wait_token": "wait-1"
+      },
+      "created_min": 0,
+      "deadline_min": null,
+      "urgent": false,
+      "critical": true,
+      "depends_on": [],
+      "evsi": 10,
+      "delay_min": 5,
+      "human_cost": 1,
+      "share": {
+        "verified": true,
+        "scope": "alpha-model-contract",
+        "key": "label",
+        "revision": "v1",
+        "evidence": "ADR-12-v1"
+      }
+    },
+    {
+      "id": "cache-plan",
+      "version": "v1",
+      "kind": "plan",
+      "owner": "human",
+      "mode": "medium",
+      "severity": "yellow",
+      "required": true,
+      "status": "pending",
+      "observed": true,
+      "question": "Approve current cache plan?",
+      "options": [
+        "approve",
+        "decline"
+      ],
+      "target": {
+        "machine": "mac",
+        "project": "alpha",
+        "task": "cache-plan",
+        "phase": "build",
+        "revision": "intent-v1",
+        "wait_token": "wait-1"
+      },
+      "created_min": 0,
+      "deadline_min": null,
+      "urgent": false,
+      "critical": false,
+      "depends_on": [],
+      "evsi": 10,
+      "delay_min": 5,
+      "human_cost": 1
+    },
+    {
+      "id": "live-permission",
+      "version": "v1",
+      "kind": "permission",
+      "owner": "human",
+      "mode": "fast",
+      "severity": "authority",
+      "required": true,
+      "status": "pending",
+      "observed": true,
+      "question": "Approve production operation?",
+      "options": [
+        "approve",
+        "decline"
+      ],
+      "target": {
+        "machine": "mac",
+        "project": "alpha",
+        "task": "live-permission",
+        "phase": "build",
+        "revision": "intent-v1",
+        "wait_token": "wait-1"
+      },
+      "created_min": 0,
+      "deadline_min": null,
+      "urgent": true,
+      "critical": false,
+      "depends_on": [],
+      "evsi": 10,
+      "delay_min": 5,
+      "human_cost": 1
+    }
+  ],
+  "now_min": 10,
+  "batch_limit": 4,
+  "max_wait_min": 30,
+  "delay_weight": 1,
+  "intakes": {}
+}

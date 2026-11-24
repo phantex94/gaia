@@ -28,3 +28,6 @@ You are operating in **qstack mode**. Enforce strict upfront intent alignment, c
      3. Connect real data, profile, run `/qstack:perf` ONLY if budgets fail (human approves speedup vs readability) -> **Gate 3** (on a board: the human's merge approval; ops production steps need a separate go/no-go after rehearsal);
      4. Mark the phase `done` with evidence in the intent file; set `status: delivered` in the last commit.
 4. **Pause / Close**: Use `/qstack:pause` for cold-start handoffs; follow `./playbooks/ship-and-feed.md` on final close.
+
+## Cross-task human attention (host-bound, optional)
+When the existing Coordinator sees multiple human decisions, apply `../attention/SKILL.md` without adding a new round or agent. Mid-build questions must use the host's native waiting report before ending the turn; retain exact decision bindings and resume only after the real gate/answer. Do not auto-approve, add background automation or introduce scoring for Fast Path.

@@ -1,6 +1,6 @@
 # gaia — Quant Development Knowledge & `qstack` Plugin
 
-This repository manages **`qstack` (`v0.4.0`)**, a `pstack`-inspired, strict 3-Round Claude Code plugin and cross-harness skill stack for human-agent quantitative framework and strategy development.
+This repository manages **`qstack` (`v0.5.0`)**, a `pstack`-inspired, strict 3-Round Claude Code plugin and cross-harness skill stack for human-agent quantitative framework and strategy development.
 
 - Active plugin source: [`plugins/qstack/`](plugins/qstack/)
 - Compute-graph view plugin: [`plugins/compute-graph/`](plugins/compute-graph/) (pane `/graph AMC-56`, page `/compute-graph:graph-page`)
@@ -38,6 +38,7 @@ On the herdr-projects board the Coordinator does Rounds 1–2 and the task's pla
 | `/qstack:perf` | Profiling + explicit Speedup-vs-Readability human approval + dual-equivalence optimization | Stops immediately if Reference already meets budgets |
 | `/qstack:setup` | Standalone repo onboarding (`Project Policy Hook` in `AGENTS.md`) | Never weakens core quant invariants |
 | `/qstack:pause` | Cold-start safe handoff checkpoint | Zero hidden context |
+| `/qstack:attention` | Existing Coordinator: collect, deduplicate and rank human decisions, check answer bindings | Advisory only; no automatic dispatch/approval; Fast remains unscored |
 
 ## Install in Claude Code
 
@@ -54,3 +55,7 @@ claude plugin install compute-graph@qstack   # optional: the compute-graph pane 
 # Helper script (also supports .agents/skills/)
 bash scripts/install-qstack.sh [claude|agents]
 ```
+
+## Human attention scheduling
+
+Use `/qstack:attention` inside the current Coordinator, or ask it to show pending human decisions. See [collaboration protocol §6](plugins/qstack/references/06-collaboration-and-hook.md#6-human-attention-scheduler-coordinator-skill) and [offline helper / evaluation](plugins/qstack/skills/attention/scripts/README.md). No new runtime service or Herdr source patch; human gates remain native.

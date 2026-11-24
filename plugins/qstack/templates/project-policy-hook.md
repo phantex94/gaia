@@ -43,3 +43,5 @@
 7. **Harness & Workflow Bindings**
    - Active orchestration tools & branching/PR policy: `<e.g., subagent / workflow / swarm / board rules>`
    - Check command the host runs (Gate 2): `<e.g., repo test + lint command>`
+
+- Optional attention binding: <existing coordinator scope; authoritative task list/details; native wait/approval routes; actual decision owners and risk/delay cost units>. No automatic new runtime, no implicit authority or default human availability.
