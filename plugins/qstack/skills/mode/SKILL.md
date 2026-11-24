@@ -10,9 +10,9 @@ You are operating in **qstack mode**. Enforce strict upfront intent alignment, c
 ## Master Flow
 1. **Round 1 & Round 2 (`/qstack:why`, run by the intake owner)**:
    - Read `../../references/principles.md` and `../../references/00-protocol.md`.
-   - Triage by semantic risk (`02` §1). Fast Path (brief plan -> implement -> test) for everything below medium+, and finish.
+   - Triage by semantic risk (`02` §1). Fast Path (brief plan -> implement -> test) intentionally skips scoring, ledger and interview; explicit fast cannot waive mandatory Red prerequisites, authority or gates. If blocked, report an unscored blocker; do not silently convert.
    - For medium+ tasks: Read-Before-Asking -> interview (≤ 2 batches) -> draft the envelope + body + roadmap -> interrogate -> every objection closed as `answer` or `non_goal` -> confirmation. Ops routing: a production/authority-boundary request or a read-only audit of a production system or shared host goes to `./playbooks/ops-change.md` with `../../templates/ops-change.yaml`; a non-production code change keeps its own playbook even if it ships through a release.
-   - **STOP at Gate 1** until the human confirms. On a work board the confirmed YAML goes into the task brief; directly, write `<intent folder>/<task>.yaml`.
+   - Medium+ only: emit all Ambiguity A/R/H receipts (`02` §6). **STOP at Gate 1** until all objections and other hard prerequisites are satisfied and the human actually confirms. On failure/budget exhaustion, status unconfirmed and no executable dispatch. On a work board the confirmed YAML goes into the task brief; directly, write `<intent folder>/<task>.yaml`.
 2. **Round 3 (`/qstack:architect`) — ZERO Concrete Business Logic Yet**:
    - Start from Data Models + reusable Compute-Graph routing. On a work board this round is the task's plan (Gate 1B = plan approval).
    - **Ops routing**: skip the code skeleton; follow `./playbooks/ops-change.md` (runbook + rehearsal plan at Gate 1B, separate go/no-go before the production step).

@@ -10,9 +10,10 @@ This repository manages **`qstack` (`v0.4.0`)**, a `pstack`-inspired, strict 3-R
 ## Strict 3-Round Workflow (`qstack`)
 
 1. **Round 1 — Triage & Interview (`/qstack:why <one-sentence need>`)**, run by the **intake owner** (a work board's coordinator before the task exists, or the agent itself):
-   - Triage by semantic risk, not size: an unconfirmed Red item, a public contract, a production/authority boundary, a new component or cross-package work makes a task **medium+**; everything else takes the **Fast Path** (plan -> execute -> test).
+   - Triage by semantic risk, not size: an unconfirmed Red item, a public contract, a production/authority boundary, a new component or cross-package work makes a task **medium+**; everything else takes the **Fast Path** (plan -> execute -> test; intentionally no ambiguity score, ledger or interview). Explicit fast never bypasses mandatory Red prerequisites, authority or gates.
    - Read-Before-Asking: the repo `AGENTS.md` + Project Policy Hook, earlier intent files, and the design sources the Hook names; then one bounded interview (recommended option first).
 2. **Round 2 — Interrogate & Confirm (Gate 1)**:
+   - Medium+ only: return Ambiguity Score A (0–100 or interval; provisional/uncalibrated), residual risk R and hard blockers H at every clarification checkpoint ([protocol §6](plugins/qstack/references/02-anti-ambiguity-yaml.md#6-measure-ambiguity-quantified-intent-clarification-medium-only)). Budget exhaustion without closure means BLOCKED, not dispatch.
    - Draft the intent from `templates/intent-envelope.yaml` + the matching body; every `/qstack:interrogate` finding is an objection the human closes as `answer` or `non_goal` (at most 2 question batches + 1 confirmation).
    - The confirmed intent is committed as **`docs/intent/<task>.yaml`** (the Hook may name another folder); its `roadmap` section tracks phase progress. The builder works from it and the reviewer judges against it.
 3. **Round 3 — `/qstack:architect` (Skeleton First, ZERO Business Logic, Gate 1B)**: the builder's plan.

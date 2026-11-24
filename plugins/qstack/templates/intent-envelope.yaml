@@ -19,7 +19,22 @@ objections:                        # Every finding from interrogate; only the hu
     issue: "<what is unclear, contradictory or risky>"
     resolution: answer             # answer | non_goal
     text: "<the human's choice, or what is out of scope>"
-decisions: []                      # Later human answers, appended: { on: yyyy-mm-dd, question: "", answer: "" }
+ambiguity:                         # New Medium+ only; omit entirely for Fast Path; preserve snapshot
+  estimator: heuristic_v1
+  calibrated: false
+  score: null                      # 0–100 approximate integer OR null with score_range
+  score_range: [0, 100]            # Replace with defensible interval, null if point supplied
+  method: "<independent_approx | joint | bounds | calibrated>"
+  coverage_residual: null          # Unknown is not zero
+  slots: []                        # {id, proposed, alternatives, evidence, mismatch_probability, loss, group}
+  residual_risk: { value: null, range: null, unit: "<explicit unit>", reason: "<if unknown>" }
+  hard_open: { red: null, yellow: null, authority: null }
+  required_sources_ok: null
+  human_cost: { batches: 0, questions: 0, confirmations: 0 }
+  history: []                      # {stage, score, score_range, delta_pp, hard_open, residual_risk, evidence, next}
+  outcome: "<GO | GO_SCOPED | BLOCKED | pending>"
+  reason: ""
+decisions: []                      # Later human answers, append dated before/after ambiguity receipts if reopened
 
 roadmap:                           # Outcome-level at Gate 1; refined into CLI <-> sub-path or node contracts at Gate 1B
   task_shape: "<graph sub-path delivery | single-node task | ops change>"

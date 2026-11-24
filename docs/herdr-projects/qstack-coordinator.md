@@ -39,3 +39,7 @@ This was not asked for in the task. The reviewer runs on Codex and has no qstack
 | Gate 2 (math and semantics audit) | The repo's `check.command`, plus review when `--review.when always` (L2/L3 or a Red item) |
 | Gate 3 (real data, perf trade-off) | Perf trade-off: permission stop. Acceptance: your merge approval (`merge.by you`) |
 | `/qstack:pause` | The task's closing note |
+
+### Quantified intake (Medium+ only)
+
+Apply `plugins/qstack/references/02-anti-ambiguity-yaml.md` §6 before board add. Return A/R/H at every applicable clarification checkpoint, preserve the ledger in the confirmed brief and append later receipts to decisions. Fast Path intentionally skips scoring, ledger and interview, but cannot bypass mandatory prerequisites or permissions. Unconfirmed/blocked Medium+ work (including autopilot) is not dispatched; plan approval is not Gate 1.

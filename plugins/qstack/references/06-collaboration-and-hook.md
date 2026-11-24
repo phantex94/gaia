@@ -21,7 +21,7 @@ Growing global caveats signal leaky module boundaries—fix the boundary before 
 - Root `AGENTS.md`: Short shared invariants + `Project Policy Hook` (`templates/project-policy-hook.md`).
 - Module `README.md`: Responsibility, I/O contract, refusal codes.
 - Executable code/schemas: Authoritative parameter and data contracts.
-- `<intent folder>/<task>.yaml` (committed, default `docs/intent/`): the confirmed intent per task, its `objections`, `decisions` and living `roadmap` (phases marked `done` with evidence). The builder works from it; the reviewer judges against it.
+- `<intent folder>/<task>.yaml` (committed, default `docs/intent/`): the confirmed intent per task, its `objections`, `ambiguity` ledger (new Medium+), `decisions` and living `roadmap` (phases marked `done` with evidence). The builder works from it; the reviewer judges against it.
 - `docs/decisions/` (ADR): Major Yellow architectural & readability trade-offs.
 - `docs/verification.md`: Executed commands, environment, revision, pass/unverified disclosure.
 - `docs/tasks/`: `/qstack:pause` cold-start handoffs (or the host's handoff file, e.g. a board closing note).
@@ -31,7 +31,7 @@ Keep `qstack` 100% repo-agnostic. Mount repo-specific stack rules, directory map
 
 ## 5. Running on a Work Board (Host Binding)
 qstack names no board; a host binds its roles once, outside the plugin:
-- **Intake owner** = the board's coordinator: triage, Read-Before-Asking, interview and Gate 1 *before* the task is added (time-boxed to the high-priority intent, about 5 minutes); the confirmed YAML goes into the task brief, and the task starts with the host plan gate on.
+- **Intake owner** = the board's coordinator: triage, Read-Before-Asking, interview and Gate 1 *before* the task is added (time-boxed to the high-priority intent, about 5 minutes); return all Medium+ A/R/H checkpoints (`02` §6); Fast Path intentionally skips scoring. Only confirmed YAML goes into a runnable task brief, and the task starts with the host plan gate on. Budget exhaustion with open blockers leaves an unconfirmed, non-dispatched note, including in autopilot.
 - **Builder** = the task's agent: Round 3 is its plan (Gate 1B); its first commit after approval writes the intent file; mid-build Red questions and perf/ops go/no-go are stop-and-ask (permission) reports.
 - **Gate 2/3** = the host's check command and review (on for L2/L3 or Red-touching tasks), then the human's merge approval.
 - **Reviewer** reads the task brief, the diff (including the intent file) and `docs/verification.md`; resolved objections and non-goals are notes, never failing findings.

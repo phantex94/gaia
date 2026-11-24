@@ -10,7 +10,7 @@ description: Strict Round 3 skeleton-first design (/qstack:architect). Writes ZE
 The first deliverable always models **data structures** and **routing across the computational graph** so that graph nodes are cleanly reused across different features and CLIs.
 
 ## Steps
-1. Read `../../references/principles.md`, `../../references/03-engineering-and-compromise.md`, and the confirmed intent (the task brief's `## Intent (confirmed)` or `<intent folder>/<task>.yaml`), including its `roadmap`.
+1. Read `../../references/principles.md`, `../../references/03-engineering-and-compromise.md`, and the confirmed intent (the task brief's `## Intent (confirmed)` or `<intent folder>/<task>.yaml`), including its `roadmap` and `ambiguity` ledger for new Medium+ tasks. Do not proceed on an unconfirmed intent. If a material clarification is required, use `02` §6 before/after A/R/H receipts and the existing stop-and-ask/gates; do not rewrite the confirmed ledger. Historical intents without scores remain readable.
    - **Ops routing**: a request that crosses the production/authority boundary (triage rule 3), or a read-only audit of a production system or shared host, routes to `../mode/playbooks/ops-change.md` with `../../templates/ops-change.yaml` instead of the code skeleton; a non-production code change keeps its own playbook even if it ships through a release—stop here and follow it (runbook + rehearsal plan).
    - **Design sources** the Hook names (design/component pages, ADRs, a contract crate): Round 3 may reduce to a **delta on those sources**—list which pages/contracts change and propose an ADR or contract change instead of editing pages you do not own.
 2. **Start from Data Models & Reusable Compute-Graph Nodes (`Pin-The-Ends`)**:
